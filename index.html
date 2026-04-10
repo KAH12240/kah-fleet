@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,9 +35,8 @@ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cur
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect } = React;
 const { createClient } = supabase;
-
 const sb = createClient("https://tjvzvwbtmilknguywdse.supabase.co", "sb_publishable_6gAsF5-FGs3SiEx-V2WL6Q_nenqNO5q");
 
 const CENTERS = [
@@ -56,8 +54,7 @@ const CENTERS = [
 
 const BUS_NAMES = [
   "Bus 21","Bus 22","Bus 23","Bus 24","Bus 25","Bus 26","Bus 27",
-  "Shuttle 1","Shuttle 2",
-  "Red Van","Blue Van","Yellow Van","Green Van"
+  "Shuttle 1","Shuttle 2","Red Van","Blue Van","Yellow Van","Green Van"
 ];
 
 function serviceStatus(nextDate) {
@@ -113,21 +110,10 @@ function App() {
     setLoading(false);
   }
 
-  function openAdd() {
-    setForm({...EMPTY_FORM, bus_name: getNextBusName()});
-    setModal({mode:"add"});
-  }
+  function openAdd() { setForm({...EMPTY_FORM, bus_name: getNextBusName()}); setModal({mode:"add"}); }
 
   function openEdit(bus) {
-    setForm({
-      bus_name: bus.bus_name||"",
-      location: bus.location||"",
-      driver: bus.driver||"",
-      last_service: bus.last_service||"",
-      next_service: bus.next_service||"",
-      mileage: bus.mileage||"",
-      notes: bus.notes||""
-    });
+    setForm({ bus_name:bus.bus_name||"", location:bus.location||"", driver:bus.driver||"", last_service:bus.last_service||"", next_service:bus.next_service||"", mileage:bus.mileage||"", notes:bus.notes||"" });
     setModal({mode:"edit", bus});
   }
 
@@ -146,7 +132,7 @@ function App() {
       const { error } = await sb.from("buses").update({ needs_service: newVal, updated_at: new Date().toISOString() }).eq("id", bus.id);
       if (error) throw error;
       setBuses(prev => prev.map(b => b.id === bus.id ? {...b, needs_service: newVal} : b));
-      showToast(newVal ? `${bus.bus_name} flagged for service!` : `${bus.bus_name} cleared from service list.`, newVal ? "warning" : "success");
+      showToast(newVal ? `${bus.bus_name} flagged for service!` : `${bus.bus_name} cleared.`, newVal ? "warning" : "success");
     } catch(e) { showToast("Update failed: " + e.message, "error"); }
     setTogglingId(null);
   }
@@ -155,18 +141,9 @@ function App() {
     if (!form.bus_name) { showToast("Please select a bus name.", "error"); return; }
     setSaving(true);
     try {
-      const payload = {
-        bus_name: form.bus_name,
-        location: form.location||null,
-        driver: form.driver||null,
-        last_service: form.last_service||null,
-        next_service: form.next_service||null,
-        mileage: form.mileage ? parseInt(form.mileage) : null,
-        notes: form.notes||null,
-        updated_at: new Date().toISOString()
-      };
+      const payload = { bus_name:form.bus_name, location:form.location||null, driver:form.driver||null, last_service:form.last_service||null, next_service:form.next_service||null, mileage:form.mileage?parseInt(form.mileage):null, notes:form.notes||null, updated_at:new Date().toISOString() };
       if (modal.mode === "add") {
-        const { error } = await sb.from("buses").insert([{...payload, id: `bus_${Date.now()}`}]);
+        const { error } = await sb.from("buses").insert([{...payload, id:`bus_${Date.now()}`}]);
         if (error) throw error;
         showToast("Bus added successfully!");
       } else {
@@ -174,8 +151,7 @@ function App() {
         if (error) throw error;
         showToast("Bus updated!");
       }
-      await loadBuses();
-      setModal(null);
+      await loadBuses(); setModal(null);
     } catch(e) { showToast("Save failed: " + e.message, "error"); }
     setSaving(false);
   }
@@ -184,10 +160,7 @@ function App() {
     try {
       const { error } = await sb.from("buses").delete().eq("id", id);
       if (error) throw error;
-      await loadBuses();
-      setConfirmDelete(null);
-      setModal(null);
-      showToast("Bus removed.");
+      await loadBuses(); setConfirmDelete(null); setModal(null); showToast("Bus removed.");
     } catch(e) { showToast("Delete failed: " + e.message, "error"); }
   }
 
@@ -202,321 +175,8 @@ function App() {
   const dueSoonCount = buses.filter(b => serviceStatus(b.next_service) === "due-soon").length;
 
   const S = {
-    header: { background: "linear-gradient(135deg,#1a2633 0%,#0f1923 100%)", borderBottom: "2px solid #f5a623", padding: "20px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 },
-    title: { fontFamily: "'Bebas Neue',sans-serif", fontSize: 36, letterSpacing: 3, color: "#f5a623", lineHeight: 1 },
-    subtitle: { fontSize: 12, color: "#8a9ab0", letterSpacing: 1, marginTop: 2 },
-    addBtn: { background: "#f5a623", color: "#0f1923", border: "none", borderRadius: 10, padding: "10px 22px", fontSize: 14, fontWeight: 800, cursor: "pointer", letterSpacing: 0.5 },
-    statsRow: { display: "flex", gap: 14, padding: "20px 32px 0", flexWrap: "wrap" },
-    statCard: { background: "#1a2633", borderRadius: 12, padding: "14px 20px", flex: 1, minWidth: 120, border: "1px solid #2a3a4a" },
-    statNum: { fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, lineHeight: 1 },
-    statLbl: { fontSize: 11, color: "#8a9ab0", letterSpacing: 1, marginTop: 2 },
-    searchRow: { padding: "20px 32px", display: "flex", gap: 12, alignItems: "center" },
-    searchInput: { flex: 1, background: "#1a2633", border: "1px solid #2a3a4a", borderRadius: 10, padding: "10px 16px", color: "#e8e8e0", fontSize: 14, outline: "none" },
-    grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 18, padding: "0 32px 32px" },
-    card: { background: "#1a2633", borderRadius: 16, padding: 22, border: "1px solid #2a3a4a", cursor: "pointer" },
-    cardBusName: { fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: "#f5a623", letterSpacing: 2, marginBottom: 4 },
-    cardRow: { display: "flex", alignItems: "center", gap: 8, marginBottom: 6, fontSize: 13, color: "#c0c8d4" },
-    cardIcon: { fontSize: 15, width: 20, textAlign: "center" },
-    modalOverlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 },
-    modalBox: { background: "#1a2633", borderRadius: 20, padding: "32px", maxWidth: 520, width: "100%", border: "1px solid #2a3a4a", maxHeight: "90vh", overflowY: "auto" },
-    modalTitle: { fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: "#f5a623", letterSpacing: 2, marginBottom: 24 },
-    label: { display: "block", fontSize: 11, fontWeight: 700, color: "#8a9ab0", letterSpacing: 1, marginBottom: 6, textTransform: "uppercase" },
-    input: { width: "100%", background: "#0f1923", border: "1px solid #2a3a4a", borderRadius: 10, padding: "10px 14px", color: "#e8e8e0", fontSize: 14, outline: "none", marginBottom: 16 },
-    select: { width: "100%", background: "#0f1923", border: "1px solid #2a3a4a", borderRadius: 10, padding: "10px 14px", color: "#e8e8e0", fontSize: 14, outline: "none", marginBottom: 16 },
-    textarea: { width: "100%", background: "#0f1923", border: "1px solid #2a3a4a", borderRadius: 10, padding: "10px 14px", color: "#e8e8e0", fontSize: 14, outline: "none", marginBottom: 16, resize: "vertical" },
-    btnRow: { display: "flex", gap: 10, marginTop: 8 },
-    saveBtn: { flex: 1, background: "#f5a623", color: "#0f1923", border: "none", borderRadius: 10, padding: "12px 0", fontSize: 15, fontWeight: 800, cursor: "pointer" },
-    cancelBtn: { background: "transparent", color: "#8a9ab0", border: "1px solid #2a3a4a", borderRadius: 10, padding: "12px 20px", fontSize: 14, cursor: "pointer", fontWeight: 600 },
-    deleteBtn: { background: "transparent", color: "#e74c3c", border: "1px solid #e74c3c44", borderRadius: 10, padding: "12px 16px", fontSize: 13, cursor: "pointer", fontWeight: 700 },
-    editBtn: { flex: 1, background: "#f5a623", color: "#0f1923", border: "none", borderRadius: 10, padding: "12px 0", fontSize: 15, fontWeight: 800, cursor: "pointer" },
-    viewRow: { display: "flex", gap: 12, marginBottom: 14, padding: "14px 16px", background: "#0f1923", borderRadius: 10 },
-    viewIcon: { fontSize: 20 },
-    viewLabel: { fontSize: 11, color: "#8a9ab0", letterSpacing: 1, textTransform: "uppercase", marginBottom: 3 },
-    viewValue: { fontSize: 15, fontWeight: 700, color: "#e8e8e0" },
-    empty: { textAlign: "center", padding: "60px 20px", color: "#4a5a6a" },
-    toast: { position: "fixed", bottom: 24, right: 24, padding: "13px 22px", borderRadius: 10, fontWeight: 700, fontSize: 14, zIndex: 9999, maxWidth: 340, boxShadow: "0 4px 24px rgba(0,0,0,0.4)" },
-    gridHalf: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 },
-
-    // Needs Service section styles
-    needsServiceSection: { margin: "20px 32px 0", background: "linear-gradient(135deg, #2a1010 0%, #1a1010 100%)", border: "2px solid #e74c3c66", borderRadius: 16, overflow: "hidden" },
-    needsServiceHeader: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", borderBottom: "1px solid #e74c3c33", background: "rgba(231,76,60,0.08)" },
-    needsServiceTitle: { fontFamily: "'Bebas Neue',sans-serif", fontSize: 26, color: "#e74c3c", letterSpacing: 3, display: "flex", alignItems: "center", gap: 10 },
-    needsServiceCount: { background: "#e74c3c", color: "#fff", fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, borderRadius: 20, padding: "2px 12px", letterSpacing: 1 },
-    needsServiceGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 14, padding: 18 },
-    nsCard: { background: "#1a1010", border: "1px solid #e74c3c44", borderRadius: 12, padding: 18, cursor: "pointer", position: "relative" },
-    nsCardName: { fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: "#ff6b6b", letterSpacing: 2, marginBottom: 6 },
-    nsCardRow: { display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#c0a0a0", marginBottom: 4 },
-    clearBtn: { background: "transparent", border: "1px solid #e74c3c66", color: "#e74c3c", borderRadius: 8, padding: "5px 12px", fontSize: 11, fontWeight: 800, cursor: "pointer", letterSpacing: 0.5 },
-    needsServiceEmpty: { padding: "20px 22px", color: "#4a3030", fontSize: 13, fontStyle: "italic" },
-  };
-
-  function NeedsServiceButton({ bus }) {
-    const isToggling = togglingId === bus.id;
-    const isActive = bus.needs_service;
-    return (
-      <button
-        className="needs-service-btn"
-        onClick={(e) => toggleNeedsService(e, bus)}
-        disabled={isToggling}
-        style={{
-          marginTop: 12,
-          width: "100%",
-          padding: "8px 0",
-          borderRadius: 9,
-          border: isActive ? "2px solid #e74c3c" : "2px solid #e74c3c55",
-          background: isActive ? "rgba(231,76,60,0.18)" : "transparent",
-          color: isActive ? "#ff6b6b" : "#8a6a6a",
-          fontSize: 12,
-          fontWeight: 800,
-          cursor: isToggling ? "wait" : "pointer",
-          letterSpacing: 0.5,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 6,
-          opacity: isToggling ? 0.6 : 1,
-        }}
-      >
-        <span style={isActive ? {display:"inline-block", animation:"wrenchPulse 1.5s ease-in-out infinite"} : {}}>🔧</span>
-        {isToggling ? "Updating…" : isActive ? "NEEDS SERVICE ✓" : "NEEDS SERVICE"}
-      </button>
-    );
-  }
-
-  return (
-    <div style={{ minHeight: "100vh", background: "#0f1923" }}>
-      {/* Header */}
-      <div style={S.header}>
-        <div>
-          <div style={S.title}>🚌 KAH Fleet Tracker</div>
-          <div style={S.subtitle}>KIDS AFTER HOURS · BUS MANAGEMENT</div>
-        </div>
-        <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-          <button style={S.addBtn} onClick={loadBuses}>🔄 Refresh</button>
-          <button style={{...S.addBtn, background:"#f5a623"}} onClick={openAdd}>+ Add Vehicle</button>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div style={S.statsRow}>
-        <div style={S.statCard}>
-          <div style={{...S.statNum, color:"#f5a623"}}>{buses.length}</div>
-          <div style={S.statLbl}>TOTAL VEHICLES</div>
-        </div>
-        <div style={{...S.statCard, borderColor: needsServiceBuses.length>0?"#e74c3c66":"#2a3a4a"}}>
-          <div style={{...S.statNum, color: needsServiceBuses.length>0?"#e74c3c":"#4a5a6a"}}>{needsServiceBuses.length}</div>
-          <div style={S.statLbl}>NEEDS SERVICE</div>
-        </div>
-        <div style={{...S.statCard, borderColor: overdueCount>0?"#e74c3c44":"#2a3a4a"}}>
-          <div style={{...S.statNum, color: overdueCount>0?"#e74c3c":"#4a5a6a"}}>{overdueCount}</div>
-          <div style={S.statLbl}>OVERDUE SERVICE</div>
-        </div>
-        <div style={{...S.statCard, borderColor: dueSoonCount>0?"#f5a62344":"#2a3a4a"}}>
-          <div style={{...S.statNum, color: dueSoonCount>0?"#f5a623":"#4a5a6a"}}>{dueSoonCount}</div>
-          <div style={S.statLbl}>DUE WITHIN 14 DAYS</div>
-        </div>
-        <div style={S.statCard}>
-          <div style={{...S.statNum, color:"#2ecc71"}}>{buses.filter(b=>serviceStatus(b.next_service)==="ok").length}</div>
-          <div style={S.statLbl}>SERVICE OK</div>
-        </div>
-      </div>
-
-      {/* ── NEEDS SERVICE SECTION ── */}
-      <div style={S.needsServiceSection}>
-        <div style={S.needsServiceHeader}>
-          <div style={S.needsServiceTitle}>
-            <span className={needsServiceBuses.length > 0 ? "wrench-anim" : ""}>🔧</span>
-            NEEDS SERVICE
-            {needsServiceBuses.length > 0 && <span style={S.needsServiceCount}>{needsServiceBuses.length}</span>}
-          </div>
-          {needsServiceBuses.length > 0 && (
-            <span style={{ fontSize: 12, color: "#8a5a5a" }}>Click a vehicle to view details · Click button to clear</span>
-          )}
-        </div>
-        {needsServiceBuses.length === 0 ? (
-          <div style={S.needsServiceEmpty}>✅ No vehicles flagged for service right now.</div>
-        ) : (
-          <div style={S.needsServiceGrid}>
-            {needsServiceBuses.map((bus, i) => (
-              <div
-                key={bus.id}
-                className="needs-service-card fade-in"
-                style={{...S.nsCard, animationDelay:`${i*0.05}s`}}
-                onClick={() => openView(bus)}
-              >
-                <div style={{ position:"absolute", top:12, right:12, width:10, height:10, background:"#e74c3c", borderRadius:"50%", boxShadow:"0 0 8px #e74c3c", animation:"pulse 2s infinite" }} />
-                <div style={S.nsCardName}>{bus.bus_name}</div>
-                {bus.location && <div style={S.nsCardRow}><span>📍</span>{bus.location.replace("KAH @ ","")}</div>}
-                {bus.driver && <div style={S.nsCardRow}><span>👤</span>{bus.driver}</div>}
-                {bus.notes && <div style={{...S.nsCardRow, marginTop:4, fontSize:11, color:"#7a5050", lineHeight:1.4}}>{bus.notes.length>60?bus.notes.slice(0,60)+"…":bus.notes}</div>}
-                <button
-                  onClick={(e) => toggleNeedsService(e, bus)}
-                  disabled={togglingId === bus.id}
-                  style={{ marginTop:12, width:"100%", padding:"7px 0", borderRadius:8, border:"1px solid #e74c3c66", background:"rgba(231,76,60,0.1)", color:"#e74c3c", fontSize:11, fontWeight:800, cursor:"pointer", letterSpacing:0.5 }}
-                >
-                  {togglingId === bus.id ? "Updating…" : "✓ CLEAR FROM SERVICE LIST"}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Search */}
-      <div style={S.searchRow}>
-        <input style={S.searchInput} placeholder="🔍 Search by bus, driver, or location…" value={search} onChange={e=>setSearch(e.target.value)} />
-      </div>
-
-      {/* All Vehicles Grid */}
-      {loading ? (
-        <div style={S.empty}><span style={{fontSize:40}}>⏳</span><p style={{marginTop:12}}>Loading fleet data…</p></div>
-      ) : filtered.length === 0 ? (
-        <div style={S.empty}>
-          <span style={{fontSize:48}}>🚌</span>
-          <p style={{marginTop:12, fontSize:16}}>{buses.length===0 ? "No vehicles added yet. Click \"+ Add Vehicle\" to get started." : "No vehicles match your search."}</p>
-        </div>
-      ) : (
-        <div style={S.grid}>
-          {filtered.map((bus, i) => {
-            const st = serviceStatus(bus.next_service);
-            return (
-              <div key={bus.id} className="bus-card fade-in" style={{...S.card, animationDelay:`${i*0.05}s`, border: bus.needs_service ? "1px solid #e74c3c44" : "1px solid #2a3a4a"}} onClick={()=>openView(bus)}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
-                  <div style={S.cardBusName}>{bus.bus_name}</div>
-                  <div style={{ display:"flex", alignItems:"center", fontSize:11, fontWeight:700, color: st==="overdue"?"#e74c3c":st==="due-soon"?"#f5a623":"#2ecc71", background: st==="overdue"?"#e74c3c18":st==="due-soon"?"#f5a62318":"#2ecc7118", padding:"4px 10px", borderRadius:20, whiteSpace:"nowrap" }}>
-                    <span className={`status-dot ${st}`}></span>
-                    {statusLabel(bus.next_service)}
-                  </div>
-                </div>
-                {bus.location && <div style={S.cardRow}><span style={S.cardIcon}>📍</span>{bus.location.replace("KAH @ ","")}</div>}
-                {bus.driver && <div style={S.cardRow}><span style={S.cardIcon}>👤</span>{bus.driver}</div>}
-                {bus.last_service && <div style={S.cardRow}><span style={S.cardIcon}>🔧</span>Last serviced: {fmtDate(bus.last_service)}</div>}
-                {bus.mileage && <div style={S.cardRow}><span style={S.cardIcon}>📊</span>{parseInt(bus.mileage).toLocaleString()} miles</div>}
-                {bus.notes && <div style={{...S.cardRow, marginTop:8, padding:"8px 12px", background:"#0f1923", borderRadius:8, fontSize:12, color:"#8a9ab0", lineHeight:1.5}}>{bus.notes.length>80?bus.notes.slice(0,80)+"…":bus.notes}</div>}
-                {/* Needs Service Button */}
-                <NeedsServiceButton bus={bus} />
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* View Modal */}
-      {modal?.mode === "view" && (
-        <div style={S.modalOverlay} onClick={()=>setModal(null)}>
-          <div style={S.modalBox} onClick={e=>e.stopPropagation()} className="fade-in">
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
-              <div style={S.modalTitle}>{modal.bus.bus_name}</div>
-              <div style={{ display:"flex", alignItems:"center", fontSize:12, fontWeight:700, color: serviceStatus(modal.bus.next_service)==="overdue"?"#e74c3c":serviceStatus(modal.bus.next_service)==="due-soon"?"#f5a623":"#2ecc71", background: serviceStatus(modal.bus.next_service)==="overdue"?"#e74c3c18":serviceStatus(modal.bus.next_service)==="due-soon"?"#f5a62318":"#2ecc7118", padding:"6px 14px", borderRadius:20 }}>
-                <span className={`status-dot ${serviceStatus(modal.bus.next_service)}`}></span>
-                {statusLabel(modal.bus.next_service)}
-              </div>
-            </div>
-
-            {/* Needs Service banner in modal */}
-            {modal.bus.needs_service && (
-              <div style={{ background:"rgba(231,76,60,0.12)", border:"1px solid #e74c3c55", borderRadius:10, padding:"10px 16px", marginBottom:16, display:"flex", alignItems:"center", gap:10, color:"#ff6b6b", fontWeight:700, fontSize:13 }}>
-                <span className="wrench-anim">🔧</span> This vehicle has been flagged as needing service.
-              </div>
-            )}
-
-            {[
-              {icon:"📍", label:"Current Location", val:modal.bus.location||"—"},
-              {icon:"👤", label:"Driver Assigned", val:modal.bus.driver||"—"},
-              {icon:"🔧", label:"Last Service Date", val:fmtDate(modal.bus.last_service)},
-              {icon:"📅", label:"Next Service Due", val:fmtDate(modal.bus.next_service)},
-              {icon:"📊", label:"Mileage", val:modal.bus.mileage ? parseInt(modal.bus.mileage).toLocaleString()+" miles":"—"},
-            ].map(r=>(
-              <div key={r.label} style={S.viewRow}>
-                <span style={S.viewIcon}>{r.icon}</span>
-                <div>
-                  <div style={S.viewLabel}>{r.label}</div>
-                  <div style={S.viewValue}>{r.val}</div>
-                </div>
-              </div>
-            ))}
-            {modal.bus.notes && (
-              <div style={{...S.viewRow, flexDirection:"column", gap:6}}>
-                <div style={{ display:"flex", gap:12 }}>
-                  <span style={S.viewIcon}>📝</span>
-                  <div style={S.viewLabel}>NOTES</div>
-                </div>
-                <div style={{ fontSize:14, color:"#c0c8d4", lineHeight:1.7, paddingLeft:32 }}>{modal.bus.notes}</div>
-              </div>
-            )}
-            {modal.bus.updated_at && <div style={{ fontSize:11, color:"#4a5a6a", marginTop:16, textAlign:"right" }}>Last updated: {new Date(modal.bus.updated_at).toLocaleString()}</div>}
-            <div style={S.btnRow}>
-              <button style={S.cancelBtn} onClick={()=>setModal(null)}>Close</button>
-              <button style={S.editBtn} onClick={()=>openEdit(modal.bus)}>✏️ Edit</button>
-              <button style={S.deleteBtn} onClick={()=>setConfirmDelete(modal.bus)}>🗑</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Add/Edit Modal */}
-      {(modal?.mode === "add" || modal?.mode === "edit") && (
-        <div style={S.modalOverlay} onClick={()=>setModal(null)}>
-          <div style={S.modalBox} onClick={e=>e.stopPropagation()} className="fade-in">
-            <div style={S.modalTitle}>{modal.mode==="add"?"Add New Vehicle":"Edit Vehicle"}</div>
-            <label style={S.label}>Vehicle Name *</label>
-            <select style={S.select} value={form.bus_name} onChange={e=>setForm({...form,bus_name:e.target.value})}>
-              <option value="">— Select vehicle —</option>
-              {BUS_NAMES.map(n=><option key={n}>{n}</option>)}
-            </select>
-            <label style={S.label}>Current Location</label>
-            <select style={S.select} value={form.location} onChange={e=>setForm({...form,location:e.target.value})}>
-              <option value="">— Select location —</option>
-              {CENTERS.map(c=><option key={c}>{c}</option>)}
-            </select>
-            <label style={S.label}>Driver Assigned</label>
-            <input style={S.input} placeholder="Driver name" value={form.driver} onChange={e=>setForm({...form,driver:e.target.value})} />
-            <div style={S.gridHalf}>
-              <div>
-                <label style={S.label}>Last Service Date</label>
-                <input type="date" style={S.input} value={form.last_service} onChange={e=>setForm({...form,last_service:e.target.value})} />
-              </div>
-              <div>
-                <label style={S.label}>Next Service Due</label>
-                <input type="date" style={S.input} value={form.next_service} onChange={e=>setForm({...form,next_service:e.target.value})} />
-              </div>
-            </div>
-            <label style={S.label}>Current Mileage</label>
-            <input style={S.input} type="number" placeholder="e.g. 45000" value={form.mileage} onChange={e=>setForm({...form,mileage:e.target.value})} />
-            <label style={S.label}>Service Notes</label>
-            <textarea style={S.textarea} rows={4} placeholder="Oil change, brake inspection, tire rotation…" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})} />
-            <div style={S.btnRow}>
-              <button style={S.cancelBtn} onClick={()=>setModal(null)}>Cancel</button>
-              <button style={{...S.saveBtn, opacity:saving?0.7:1}} onClick={handleSave} disabled={saving}>
-                {saving?"Saving…":"💾 Save Bus"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Confirm Delete */}
-      {confirmDelete && (
-        <div style={S.modalOverlay}>
-          <div style={{...S.modalBox, maxWidth:360, textAlign:"center"}} className="fade-in">
-            <div style={{fontSize:48, marginBottom:16}}>🗑️</div>
-            <div style={{...S.modalTitle, fontSize:22}}>Remove {confirmDelete.bus_name}?</div>
-            <p style={{color:"#8a9ab0", marginBottom:24, fontSize:14}}>This will permanently delete all info for this vehicle. This cannot be undone.</p>
-            <div style={S.btnRow}>
-              <button style={S.cancelBtn} onClick={()=>setConfirmDelete(null)}>Cancel</button>
-              <button style={{...S.saveBtn, background:"#e74c3c"}} onClick={()=>handleDelete(confirmDelete.id)}>Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Toast */}
-      {toast && <div style={{...S.toast, background:toast.type==="error"?"#c0392b":toast.type==="warning"?"#c0390b":"#27ae60"}}>{toast.type==="error"?"⚠️ ":toast.type==="warning"?"🔧 ":"✅ "}{toast.msg}</div>}
-    </div>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-</script>
-</body>
-</html>
+    header: { background:"linear-gradient(135deg,#1a2633 0%,#0f1923 100%)", borderBottom:"2px solid #f5a623", padding:"20px 32px", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:16 },
+    title: { fontFamily:"'Bebas Neue',sans-serif", fontSize:36, letterSpacing:3, color:"#f5a623", lineHeight:1 },
+    subtitle: { fontSize:12, color:"#8a9ab0", letterSpacing:1, marginTop:2 },
+    addBtn: { background:"#f5a623", color:"#0f1923", border:"none", borderRadius:10, padding:"10px 22px", fontSize:14, fontWeight:800, cursor:"pointer", letterSpacing:0.5 },
+    statsRow: { disp
