@@ -51,7 +51,9 @@
   .notes-box { background: #F9F9F6; border-radius: 8px; padding: 12px 14px; font-size: 14px; line-height: 1.65; margin-top: 4px; border: 1px solid #EEEDE8; }
   .notes-label { font-size: 13px; color: #888; margin: 12px 0 6px; }
   .review-img { width: 100%; border-radius: 10px; border: 1px solid #E8E8E3; margin-top: 4px; }
-  .img-placeholder { background: #F5F5F0; border-radius: 10px; height: 120px; display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 14px; margin-top: 4px; border: 1px solid #E8E8E3; }
+  .pdf-viewer { width: 100%; height: 520px; border-radius: 10px; border: 1px solid #E8E8E3; margin-top: 4px; }
+  .open-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; background: #F59E0B; color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-size: 14px; cursor: pointer; text-decoration: none; }
+  .open-link:hover { background: #D97706; }
   .delete-btn { background: none; border: 1px solid #E8E8E3; border-radius: 8px; padding: 6px 12px; font-size: 13px; color: #888; cursor: pointer; display: flex; align-items: center; gap: 5px; }
   .delete-btn:hover { border-color: #EF4444; color: #EF4444; }
   .confirm-box { background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 14px 16px; margin-top: 14px; }
@@ -60,7 +62,7 @@
   .confirm-del { background: #EF4444; color: #fff; border: none; border-radius: 6px; padding: 6px 14px; font-size: 13px; cursor: pointer; }
   .confirm-cancel { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #555; }
   .divider { border: none; border-top: 1px solid #EEEDE8; margin: 14px 0; }
-  .no-photo { font-size: 13px; color: #bbb; margin-top: 4px; }
+  .no-file { font-size: 13px; color: #bbb; margin-top: 4px; }
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.38); display: flex; align-items: flex-end; justify-content: center; z-index: 100; }
   .modal { background: #fff; border-radius: 16px 16px 0 0; width: 100%; max-width: 620px; padding: 22px 20px 36px; max-height: 92vh; overflow-y: auto; }
   .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
@@ -73,15 +75,19 @@
   input[type="date"]:focus, input[type="text"]:focus { border-color: #F59E0B; }
   textarea { width: 100%; border-radius: 8px; border: 1px solid #ddd; padding: 10px 12px; font-size: 15px; color: #1a1a1a; outline: none; resize: vertical; min-height: 90px; background: #fff; }
   textarea:focus { border-color: #F59E0B; }
-  .upload-btn { width: 100%; border: 2px dashed #F59E0B; border-radius: 8px; padding: 22px; text-align: center; cursor: pointer; color: #B45309; font-size: 14px; background: #FFFBEB; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .upload-btn:hover { background: #FEF3C7; }
-  .upload-btn svg { width: 24px; height: 24px; }
-  .img-preview-wrap { position: relative; }
-  .img-preview { width: 100%; border-radius: 8px; border: 1px solid #ddd; display: block; }
-  .remove-img { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.55); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+  .upload-area { width: 100%; border: 2px dashed #F59E0B; border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; color: #B45309; font-size: 14px; background: #FFFBEB; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .upload-area:hover { background: #FEF3C7; }
+  .upload-area svg { width: 28px; height: 28px; }
+  .file-preview { background: #F9F9F6; border: 1px solid #ddd; border-radius: 8px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; position: relative; }
+  .file-preview-name { font-size: 14px; color: #444; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-preview-remove { background: rgba(0,0,0,0.12); border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; color: #555; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .img-preview { width: 100%; border-radius: 8px; border: 1px solid #ddd; display: block; margin-top: 8px; }
   .save-btn { width: 100%; background: #F59E0B; color: #fff; border: none; border-radius: 9px; height: 46px; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 8px; }
   .save-btn:hover { background: #D97706; }
   .save-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .progress-bar-wrap { width: 100%; background: #F0EDE8; border-radius: 8px; height: 8px; margin-top: 10px; overflow: hidden; }
+  .progress-bar { height: 100%; background: #F59E0B; border-radius: 8px; transition: width 0.3s; }
+  .progress-label { font-size: 13px; color: #888; text-align: center; margin-top: 6px; }
   .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #E8E8E3; border-top-color: #F59E0B; border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-wrap { text-align: center; padding: 48px; color: #bbb; display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 14px; }
@@ -152,8 +158,6 @@ let state = {
   reviews: [],
   reviewsLoading: false,
   activeReview: null,
-  activeImage: null,
-  imageLoading: false,
   centerCounts: {},
   centerLastVisit: {},
   search: "",
@@ -161,45 +165,37 @@ let state = {
   formDate: todayStr(),
   formReviewer: "",
   formNotes: "",
-  formImage: null,
+  formFile: null,
   formFileName: "",
+  formFileType: null,
+  formPreviewUrl: null,
   saving: false,
+  uploadProgress: 0,
   deleteConfirm: false,
 };
 
 function todayStr() { return new Date().toISOString().slice(0, 10); }
-
 function formatDate(s) {
   if (!s) return "";
   const d = new Date(s + "T00:00:00");
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
-
-function initials(name) {
-  return name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
-}
-
+function initials(name) { return name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase(); }
 function escHtml(str) {
   if (!str) return "";
   return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
-
 function showToast(msg) {
   const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2800);
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
 }
 
 // ── Supabase ───────────────────────────────────────────────────────────
 async function fetchCenterMeta() {
-  const { data, error } = await sb
-    .from("visit_reviews")
-    .select("center_id, date")
-    .order("date", { ascending: false });
+  const { data, error } = await sb.from("visit_reviews").select("center_id, date").order("date", { ascending: false });
   if (error) { console.error(error); return; }
-  const counts = {};
-  const lastVisit = {};
+  const counts = {}, lastVisit = {};
   CENTERS.forEach(c => { counts[c.id] = 0; lastVisit[c.id] = null; });
   (data || []).forEach(r => {
     counts[r.center_id] = (counts[r.center_id] || 0) + 1;
@@ -210,45 +206,40 @@ async function fetchCenterMeta() {
 }
 
 async function fetchReviewsForCenter(centerId) {
-  const { data, error } = await sb
-    .from("visit_reviews")
-    .select("*")
-    .eq("center_id", centerId)
-    .order("date", { ascending: false });
+  const { data, error } = await sb.from("visit_reviews").select("*").eq("center_id", centerId).order("date", { ascending: false });
   if (error) { console.error(error); return []; }
   return (data || []).map(r => ({
     id: r.id, centerId: r.center_id, date: r.date,
     reviewer: r.reviewer, notes: r.notes || "",
-    hasImage: r.has_image, fileType: r.file_type || 'image', createdAt: r.created_at,
+    hasFile: r.has_image, fileType: r.file_type,
+    fileUrl: r.file_url, createdAt: r.created_at,
   }));
 }
 
-async function insertReview(review, imageData) {
+async function uploadFile(reviewId, file) {
+  const ext = file.type === "application/pdf" ? "pdf" : "jpg";
+  const path = `${reviewId}.${ext}`;
+  const { error } = await sb.storage.from("review-files").upload(path, file, { contentType: file.type, upsert: true });
+  if (error) throw error;
+  const { data } = sb.storage.from("review-files").getPublicUrl(path);
+  return data.publicUrl;
+}
+
+async function insertReview(review, fileUrl) {
   const { error } = await sb.from("visit_reviews").insert({
     id: review.id, center_id: review.centerId, date: review.date,
     reviewer: review.reviewer, notes: review.notes || null,
-    has_image: review.hasImage, file_type: review.fileType || null, created_at: review.createdAt,
+    has_image: review.hasFile, file_type: review.fileType,
+    file_url: fileUrl || null, created_at: review.createdAt,
   });
   if (error) throw error;
-  if (imageData) {
-    const { error: ie } = await sb.from("visit_review_images").insert({
-      review_id: review.id, image_data: imageData,
-    });
-    if (ie) console.error(ie);
+}
+
+async function removeReview(reviewId, fileType) {
+  if (fileType) {
+    const ext = fileType === "pdf" ? "pdf" : "jpg";
+    await sb.storage.from("review-files").remove([`${reviewId}.${ext}`]);
   }
-}
-
-async function fetchImage(reviewId) {
-  const { data, error } = await sb
-    .from("visit_review_images")
-    .select("image_data")
-    .eq("review_id", reviewId)
-    .single();
-  if (error || !data) return null;
-  return data.image_data;
-}
-
-async function removeReview(reviewId) {
   const { error } = await sb.from("visit_reviews").delete().eq("id", reviewId);
   if (error) throw error;
 }
@@ -295,18 +286,20 @@ function renderCenter() {
   } else if (state.reviews.length === 0) {
     revHtml = `<div class="empty"><div class="emoji">📋</div><p>No visit reviews yet.</p><small>Tap "Add Review" after a center visit.</small></div>`;
   } else {
-    revHtml = state.reviews.map(r => `
-      <div class="rev-card" data-action="open-review" data-id="${r.id}">
+    revHtml = state.reviews.map(r => {
+      const icon = r.fileType === "pdf" ? "📄" : r.hasFile ? "📷" : "";
+      return `<div class="rev-card" data-action="open-review" data-id="${r.id}">
         <div class="rev-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </div>
         <div style="flex:1;min-width:0">
           <div class="rev-date">${formatDate(r.date)}</div>
-          <div class="rev-meta">Reviewed by ${escHtml(r.reviewer)}${r.hasImage ? (r.fileType === 'pdf' ? " &nbsp;📄" : " &nbsp;📷") : ""}</div>
+          <div class="rev-meta">Reviewed by ${escHtml(r.reviewer)}${icon ? " &nbsp;" + icon : ""}</div>
           ${r.notes ? `<div class="rev-notes-preview">${escHtml(r.notes)}</div>` : ""}
         </div>
         <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>`).join("");
+      </div>`;
+    }).join("");
   }
   return `
     <button class="back-btn" data-action="go-list">
@@ -328,17 +321,22 @@ function renderCenter() {
 
 function renderReview() {
   const r = state.activeReview;
-  let imgHtml = "";
-  if (r.hasImage) {
-    if (state.imageLoading) imgHtml = `<div class="img-placeholder"><div class="spinner"></div></div>`;
-    else if (state.activeImage) {
-      const isPdf = state.activeImage.startsWith('data:application/pdf');
-      imgHtml = isPdf
-        ? `<embed src="${state.activeImage}" type="application/pdf" style="width:100%;height:500px;border-radius:10px;border:1px solid #E8E8E3;margin-top:4px" />`
-        : `<img class="review-img" src="${state.activeImage}" alt="Visit review form" />`;
+  let fileHtml = "";
+  if (r.hasFile && r.fileUrl) {
+    if (r.fileType === "pdf") {
+      fileHtml = `
+        <embed src="${escHtml(r.fileUrl)}" type="application/pdf" class="pdf-viewer" />
+        <a class="open-link" href="${escHtml(r.fileUrl)}" target="_blank">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Open PDF
+        </a>`;
+    } else {
+      fileHtml = `<img class="review-img" src="${escHtml(r.fileUrl)}" alt="Visit review form" />`;
     }
-    else imgHtml = `<div class="img-placeholder">File not available</div>`;
+  } else if (r.hasFile) {
+    fileHtml = `<div style="font-size:13px;color:#bbb;margin-top:4px">File unavailable</div>`;
   }
+
   const confirmHtml = state.deleteConfirm ? `
     <div class="confirm-box">
       <p>Delete this visit review? This cannot be undone.</p>
@@ -347,6 +345,7 @@ function renderReview() {
         <button class="confirm-cancel" data-action="cancel-delete">Cancel</button>
       </div>
     </div>` : "";
+
   return `
     <button class="back-btn" data-action="go-center">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
@@ -364,25 +363,38 @@ function renderReview() {
       <div class="detail-row"><span class="detail-label">Reviewer</span><span class="detail-val">${escHtml(r.reviewer)}</span></div>
       ${r.notes ? `<div class="notes-label">Notes</div><div class="notes-box">${escHtml(r.notes)}</div>` : ""}
       ${confirmHtml}
-      ${r.hasImage ? `<hr class="divider"><div class="notes-label">Uploaded Review Form</div>${imgHtml}` : `<hr class="divider"><div class="no-photo">No photo uploaded for this review.</div>`}
+      <hr class="divider">
+      <div class="notes-label">Uploaded Review Form</div>
+      ${r.hasFile ? fileHtml : `<div class="no-file">No file uploaded for this review.</div>`}
     </div>`;
 }
 
 function renderModal() {
   const c = state.selectedCenter;
-  const isPdf = state.formImage && state.formImage.startsWith('data:application/pdf');
-  const imgHtml = state.formImage
-    ? (isPdf
-        ? `<div style="position:relative">
-             <div style="background:#F9F9F6;border:1px solid #ddd;border-radius:8px;padding:16px;display:flex;align-items:center;gap:12px">
-               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6M9 17h4"/></svg>
-               <span style="font-size:14px;color:#555;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(state.formFileName)}</span>
-             </div>
-             <button class="remove-img" data-action="remove-img" style="position:absolute;top:8px;right:8px">&#x2715;</button>
-           </div>`
-        : `<div class="img-preview-wrap"><img class="img-preview" src="${state.formImage}" alt="Preview" /><button class="remove-img" data-action="remove-img">&#x2715;</button></div>`)
-    : `<div class="upload-btn" data-action="trigger-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Tap to upload photo or PDF of review form</div>`;
+  let uploadHtml = "";
+  if (state.formFile) {
+    const isImg = state.formFileType !== "pdf";
+    uploadHtml = `
+      <div class="file-preview">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="file-preview-name">${escHtml(state.formFileName)}</span>
+        <button class="file-preview-remove" data-action="remove-file">&#x2715;</button>
+      </div>
+      ${isImg && state.formPreviewUrl ? `<img class="img-preview" src="${state.formPreviewUrl}" alt="Preview" />` : ""}`;
+  } else {
+    uploadHtml = `
+      <div class="upload-area" data-action="trigger-upload">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span>Tap to upload photo or PDF of review form</span>
+        <span style="font-size:12px;color:#aaa">Supports JPG, PNG, PDF</span>
+      </div>`;
+  }
+
   const canSave = state.formDate && state.formReviewer.trim();
+  const progressHtml = state.saving && state.uploadProgress > 0 ? `
+    <div class="progress-bar-wrap"><div class="progress-bar" style="width:${state.uploadProgress}%"></div></div>
+    <div class="progress-label">${state.uploadProgress < 100 ? "Uploading… " + state.uploadProgress + "%" : "Saving…"}</div>` : "";
+
   return `
     <div class="overlay" id="modal-overlay">
       <div class="modal">
@@ -393,7 +405,8 @@ function renderModal() {
         <div class="field-group"><label>Visit Date *</label><input type="date" id="f-date" value="${state.formDate}" /></div>
         <div class="field-group"><label>Reviewer Name *</label><input type="text" id="f-reviewer" placeholder="Your name" value="${escHtml(state.formReviewer)}" /></div>
         <div class="field-group"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any additional notes or observations…">${escHtml(state.formNotes)}</textarea></div>
-        <div class="field-group"><label>Upload Review Form Photo (optional)</label>${imgHtml}</div>
+        <div class="field-group"><label>Upload Review Form (optional)</label>${uploadHtml}</div>
+        ${progressHtml}
         <button class="save-btn" data-action="save-review" ${!canSave || state.saving ? "disabled" : ""}>${state.saving ? "Saving…" : "Save Review"}</button>
       </div>
     </div>`;
@@ -405,7 +418,6 @@ function bindEvents() {
   if (si) si.addEventListener("input", e => { state.search = e.target.value; render(); });
   document.getElementById("app").addEventListener("click", handleClick);
 }
-
 function bindModal() {
   const overlay = document.getElementById("modal-overlay");
   if (overlay) overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
@@ -416,19 +428,18 @@ function bindModal() {
   if (fr) fr.addEventListener("input", e => { state.formReviewer = e.target.value; });
   if (fn) fn.addEventListener("input", e => { state.formNotes = e.target.value; });
 }
-
 function handleClick(e) {
   const el = e.target.closest("[data-action]");
   if (!el) return;
   const action = el.dataset.action;
   if (action === "open-center") { const c = CENTERS.find(c => c.id === el.dataset.id); if (c) openCenter(c); }
   else if (action === "go-list") { state.view = "list"; state.selectedCenter = null; state.reviews = []; render(); }
-  else if (action === "go-center") { state.view = "center"; state.activeReview = null; state.activeImage = null; state.deleteConfirm = false; render(); }
+  else if (action === "go-center") { state.view = "center"; state.activeReview = null; state.deleteConfirm = false; render(); }
   else if (action === "open-review") { const r = state.reviews.find(r => r.id === el.dataset.id); if (r) openReview(r); }
   else if (action === "open-modal") { state.showModal = true; render(); }
   else if (action === "close-modal") { closeModal(); }
   else if (action === "trigger-upload") { document.getElementById("file-input").click(); }
-  else if (action === "remove-img") { state.formImage = null; render(); }
+  else if (action === "remove-file") { state.formFile = null; state.formFileName = ""; state.formFileType = null; state.formPreviewUrl = null; render(); }
   else if (action === "save-review") { saveReview(); }
   else if (action === "start-delete") { state.deleteConfirm = true; render(); }
   else if (action === "confirm-delete") { doDelete(); }
@@ -437,7 +448,9 @@ function handleClick(e) {
 
 function closeModal() {
   state.showModal = false; state.formDate = todayStr();
-  state.formReviewer = ""; state.formNotes = ""; state.formImage = null; state.formFileName = "";
+  state.formReviewer = ""; state.formNotes = "";
+  state.formFile = null; state.formFileName = ""; state.formFileType = null; state.formPreviewUrl = null;
+  state.saving = false; state.uploadProgress = 0;
   render();
 }
 
@@ -450,12 +463,10 @@ async function openCenter(center) {
   render();
 }
 
-async function openReview(rev) {
-  state.activeReview = rev; state.activeImage = null;
-  state.imageLoading = rev.hasImage; state.deleteConfirm = false;
+function openReview(rev) {
+  state.activeReview = rev; state.deleteConfirm = false;
   state.view = "review";
   render();
-  if (rev.hasImage) { state.activeImage = await fetchImage(rev.id); state.imageLoading = false; render(); }
 }
 
 async function saveReview() {
@@ -466,17 +477,27 @@ async function saveReview() {
   if (fr) state.formReviewer = fr.value;
   if (fn) state.formNotes = fn.value;
   if (!state.formDate || !state.formReviewer.trim()) return;
-  state.saving = true; render();
+
+  state.saving = true; state.uploadProgress = 0; render();
+
+  const reviewId = state.selectedCenter.id + "-" + Date.now();
   const review = {
-    id: state.selectedCenter.id + "-" + Date.now(),
-    centerId: state.selectedCenter.id, date: state.formDate,
-    reviewer: state.formReviewer.trim(), notes: state.formNotes.trim(),
-    hasImage: !!state.formImage,
-    fileType: state.formImage ? (state.formImage.startsWith('data:application/pdf') ? 'pdf' : 'image') : null,
-    createdAt: new Date().toISOString(),
+    id: reviewId, centerId: state.selectedCenter.id,
+    date: state.formDate, reviewer: state.formReviewer.trim(),
+    notes: state.formNotes.trim(), hasFile: !!state.formFile,
+    fileType: state.formFileType, createdAt: new Date().toISOString(),
   };
+
   try {
-    await insertReview(review, state.formImage);
+    let fileUrl = null;
+    if (state.formFile) {
+      state.uploadProgress = 30; render();
+      fileUrl = await uploadFile(reviewId, state.formFile);
+      state.uploadProgress = 80; render();
+    }
+    await insertReview(review, fileUrl);
+    state.uploadProgress = 100;
+    review.fileUrl = fileUrl;
     state.centerCounts[state.selectedCenter.id] = (state.centerCounts[state.selectedCenter.id] || 0) + 1;
     if (!state.centerLastVisit[state.selectedCenter.id] || review.date >= state.centerLastVisit[state.selectedCenter.id]) {
       state.centerLastVisit[state.selectedCenter.id] = review.date;
@@ -486,60 +507,46 @@ async function saveReview() {
     closeModal();
     showToast("Review saved!");
   } catch (err) {
-    state.saving = false; render();
-    showToast("Error saving — see console for details.");
+    state.saving = false; state.uploadProgress = 0; render();
+    showToast("Error saving — " + (err.message || "check console"));
     console.error(err);
   }
 }
 
 async function doDelete() {
-  const rev = state.activeReview;
+  const r = state.activeReview;
   try {
-    await removeReview(rev.id);
+    await removeReview(r.id, r.fileType);
     state.centerCounts[state.selectedCenter.id] = Math.max(0, (state.centerCounts[state.selectedCenter.id] || 1) - 1);
-    state.reviews = state.reviews.filter(r => r.id !== rev.id);
+    state.reviews = state.reviews.filter(x => x.id !== r.id);
     state.centerLastVisit[state.selectedCenter.id] = state.reviews.length > 0 ? state.reviews[0].date : null;
     state.view = "center"; state.activeReview = null; state.deleteConfirm = false;
-    render();
-    showToast("Review deleted.");
+    render(); showToast("Review deleted.");
   } catch (err) {
-    showToast("Error deleting — see console for details.");
+    showToast("Error deleting — " + (err.message || "check console"));
     console.error(err);
   }
 }
 
+// ── File input ─────────────────────────────────────────────────────────
 document.getElementById("file-input").addEventListener("change", function(e) {
   const file = e.target.files[0];
   if (!file) return;
+  state.formFile = file;
   state.formFileName = file.name;
-
-  if (file.type === "application/pdf") {
+  state.formFileType = file.type === "application/pdf" ? "pdf" : "image";
+  if (state.formFileType === "image") {
     const reader = new FileReader();
-    reader.onload = ev => { state.formImage = ev.target.result; render(); };
+    reader.onload = ev => { state.formPreviewUrl = ev.target.result; render(); };
     reader.readAsDataURL(file);
   } else {
-    // Compress image before storing
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const MAX = 1200;
-        let w = img.width, h = img.height;
-        if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-        if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
-        canvas.width = w; canvas.height = h;
-        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-        state.formImage = canvas.toDataURL("image/jpeg", 0.7);
-        render();
-      };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
+    state.formPreviewUrl = null;
+    render();
   }
   this.value = "";
 });
 
+// ── Init ───────────────────────────────────────────────────────────────
 (async () => { await fetchCenterMeta(); render(); })();
 </script>
 </body>
