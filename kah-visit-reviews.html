@@ -512,9 +512,31 @@ document.getElementById("file-input").addEventListener("change", function(e) {
   const file = e.target.files[0];
   if (!file) return;
   state.formFileName = file.name;
-  const reader = new FileReader();
-  reader.onload = ev => { state.formImage = ev.target.result; render(); };
-  reader.readAsDataURL(file);
+
+  if (file.type === "application/pdf") {
+    const reader = new FileReader();
+    reader.onload = ev => { state.formImage = ev.target.result; render(); };
+    reader.readAsDataURL(file);
+  } else {
+    // Compress image before storing
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX = 1200;
+        let w = img.width, h = img.height;
+        if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+        if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        state.formImage = canvas.toDataURL("image/jpeg", 0.7);
+        render();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
   this.value = "";
 });
 
