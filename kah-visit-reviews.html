@@ -8,63 +8,46 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F5F5F0; min-height: 100vh; color: #1a1a1a; }
   input, textarea, button { font-family: inherit; }
-
-  /* Header */
   #header { background: #fff; border-bottom: 1px solid #E5E5E0; padding: 14px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
   #logo { width: 38px; height: 38px; border-radius: 9px; background: #F59E0B; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 13px; flex-shrink: 0; }
   #header-text h1 { font-size: 16px; font-weight: 600; }
   #header-text p { font-size: 12px; color: #888; }
-
-  /* Body */
   #app { padding: 20px 16px; max-width: 660px; margin: 0 auto; }
-
-  /* Search */
   .search-wrap { position: relative; margin-bottom: 10px; }
   .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #aaa; pointer-events: none; }
   .search-wrap input { width: 100%; padding: 0 12px 0 36px; height: 40px; border-radius: 9px; border: 1px solid #ddd; background: #fff; font-size: 14px; outline: none; color: #1a1a1a; }
   .search-wrap input:focus { border-color: #F59E0B; }
   .count-label { font-size: 12px; color: #999; margin-bottom: 12px; display: block; }
-
-  /* Cards */
   .card { background: #fff; border-radius: 10px; border: 1px solid #E8E8E3; margin-bottom: 8px; padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: border-color 0.15s; }
   .card:hover { border-color: #F59E0B; }
   .avatar { width: 40px; height: 40px; border-radius: 9px; background: #FFFBEB; display: flex; align-items: center; justify-content: center; color: #B45309; font-weight: 700; font-size: 12px; flex-shrink: 0; }
-  .card-name { font-size: 15px; font-weight: 500; flex: 1; }
+  .card-name { font-size: 15px; font-weight: 500; }
+  .card-sub { font-size: 12px; color: #aaa; margin-top: 2px; }
   .badge { background: #FFFBEB; color: #B45309; border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 500; flex-shrink: 0; }
   .chevron { color: #ccc; flex-shrink: 0; }
-
-  /* Back button */
   .back-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #888; font-size: 14px; padding: 4px 0; margin-bottom: 16px; }
   .back-btn:hover { color: #F59E0B; }
-
-  /* Section header */
   .section-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
   .section-title { font-size: 20px; font-weight: 600; }
   .section-sub { font-size: 13px; color: #888; margin-top: 2px; }
   .add-btn { display: flex; align-items: center; gap: 6px; background: #F59E0B; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 14px; font-weight: 500; cursor: pointer; flex-shrink: 0; }
   .add-btn:hover { background: #D97706; }
-
-  /* Review cards */
   .rev-card { background: #fff; border-radius: 10px; border: 1px solid #E8E8E3; margin-bottom: 8px; padding: 14px 16px; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.15s; }
   .rev-card:hover { border-color: #F59E0B; }
   .rev-icon { width: 36px; height: 36px; border-radius: 8px; background: #FFFBEB; display: flex; align-items: center; justify-content: center; color: #B45309; flex-shrink: 0; }
   .rev-date { font-size: 15px; font-weight: 500; }
   .rev-meta { font-size: 13px; color: #888; margin-top: 2px; }
   .rev-notes-preview { font-size: 13px; color: #999; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 380px; }
-
-  /* Empty state */
   .empty { text-align: center; padding: 52px 20px; color: #aaa; }
   .empty .emoji { font-size: 44px; margin-bottom: 12px; }
   .empty p { font-size: 15px; }
   .empty small { font-size: 13px; }
-
-  /* Detail view */
   .detail-card { background: #fff; border-radius: 10px; border: 1px solid #E8E8E3; padding: 18px; }
   .detail-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .detail-head h2 { font-size: 18px; font-weight: 600; }
-  .detail-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 15px; }
+  .detail-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
   .detail-label { font-size: 13px; color: #888; width: 90px; flex-shrink: 0; }
-  .detail-val { font-weight: 500; }
+  .detail-val { font-size: 15px; font-weight: 500; }
   .notes-box { background: #F9F9F6; border-radius: 8px; padding: 12px 14px; font-size: 14px; line-height: 1.65; margin-top: 4px; border: 1px solid #EEEDE8; }
   .notes-label { font-size: 13px; color: #888; margin: 12px 0 6px; }
   .review-img { width: 100%; border-radius: 10px; border: 1px solid #E8E8E3; margin-top: 4px; }
@@ -78,8 +61,6 @@
   .confirm-cancel { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #555; }
   .divider { border: none; border-top: 1px solid #EEEDE8; margin: 14px 0; }
   .no-photo { font-size: 13px; color: #bbb; margin-top: 4px; }
-
-  /* Modal */
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.38); display: flex; align-items: flex-end; justify-content: center; z-index: 100; }
   .modal { background: #fff; border-radius: 16px 16px 0 0; width: 100%; max-width: 620px; padding: 22px 20px 36px; max-height: 92vh; overflow-y: auto; }
   .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
@@ -97,18 +78,15 @@
   .upload-btn svg { width: 24px; height: 24px; }
   .img-preview-wrap { position: relative; }
   .img-preview { width: 100%; border-radius: 8px; border: 1px solid #ddd; display: block; }
-  .remove-img { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.55); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; line-height: 1; }
+  .remove-img { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.55); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; }
   .save-btn { width: 100%; background: #F59E0B; color: #fff; border: none; border-radius: 9px; height: 46px; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 8px; }
   .save-btn:hover { background: #D97706; }
   .save-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-  /* Loading spinner */
-  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #E8E8E3; border-top-color: #F59E0B; border-radius: 50%; animation: spin 0.7s linear infinite; margin: 20px auto; }
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #E8E8E3; border-top-color: #F59E0B; border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-wrap { text-align: center; padding: 32px; }
-
-  /* Hidden */
-  .hidden { display: none; }
+  .loading-wrap { text-align: center; padding: 48px; color: #bbb; display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 14px; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 14px; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; }
 </style>
 </head>
 <body>
@@ -121,12 +99,21 @@
   </div>
 </div>
 
-<div id="app"></div>
+<div id="app">
+  <div class="loading-wrap"><div class="spinner"></div>Connecting…</div>
+</div>
 
-<!-- Hidden file input -->
-<input type="file" id="file-input" accept="image/*" style="display:none" />
+<div class="toast" id="toast"></div>
+<input type="file" id="file-input" accept="image/*,.pdf" style="display:none" />
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+const { createClient } = supabase;
+const sb = createClient(
+  'https://tjvzvwbtmilknguywdse.supabase.co',
+  'sb_publishable_6gAsF5-FGs3SiEx-V2WL6Q_nenqNO5q'
+);
+
 const CENTERS = [
   { id: "barnsley", name: "Barnsley Elementary" },
   { id: "bayard-rustin", name: "Bayard Rustin Elementary" },
@@ -159,9 +146,8 @@ const CENTERS = [
   { id: "woodlin", name: "Woodlin Elementary" },
 ];
 
-// ── State ──────────────────────────────────────────────────────────────
 let state = {
-  view: "list",            // "list" | "center" | "review"
+  view: "list",
   selectedCenter: null,
   reviews: [],
   reviewsLoading: false,
@@ -176,13 +162,12 @@ let state = {
   formReviewer: "",
   formNotes: "",
   formImage: null,
+  formFileName: "",
   saving: false,
   deleteConfirm: false,
 };
 
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
+function todayStr() { return new Date().toISOString().slice(0, 10); }
 
 function formatDate(s) {
   if (!s) return "";
@@ -194,47 +179,78 @@ function initials(name) {
   return name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
 }
 
-// ── Storage helpers ────────────────────────────────────────────────────
-function getIndex(centerId) {
-  try { return JSON.parse(localStorage.getItem("kah-idx:" + centerId) || "[]"); } catch { return []; }
-}
-function setIndex(centerId, arr) {
-  localStorage.setItem("kah-idx:" + centerId, JSON.stringify(arr));
-}
-function getReview(id) {
-  try { return JSON.parse(localStorage.getItem("kah-rev:" + id)); } catch { return null; }
-}
-function setReview(id, data) {
-  localStorage.setItem("kah-rev:" + id, JSON.stringify(data));
-}
-function getImage(id) {
-  return localStorage.getItem("kah-img:" + id);
-}
-function setImage(id, data) {
-  if (data) localStorage.setItem("kah-img:" + id, data);
-}
-function deleteReviewData(centerId, reviewId) {
-  const idx = getIndex(centerId).filter(i => i !== reviewId);
-  setIndex(centerId, idx);
-  localStorage.removeItem("kah-rev:" + reviewId);
-  localStorage.removeItem("kah-img:" + reviewId);
+function escHtml(str) {
+  if (!str) return "";
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-function loadCenterCounts() {
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+// ── Supabase ───────────────────────────────────────────────────────────
+async function fetchCenterMeta() {
+  const { data, error } = await sb
+    .from("visit_reviews")
+    .select("center_id, date")
+    .order("date", { ascending: false });
+  if (error) { console.error(error); return; }
   const counts = {};
   const lastVisit = {};
-  CENTERS.forEach(c => {
-    const idx = getIndex(c.id);
-    counts[c.id] = idx.length;
-    if (idx.length > 0) {
-      const rev = getReview(idx[0]);
-      lastVisit[c.id] = rev ? rev.date : null;
-    } else {
-      lastVisit[c.id] = null;
-    }
+  CENTERS.forEach(c => { counts[c.id] = 0; lastVisit[c.id] = null; });
+  (data || []).forEach(r => {
+    counts[r.center_id] = (counts[r.center_id] || 0) + 1;
+    if (!lastVisit[r.center_id]) lastVisit[r.center_id] = r.date;
   });
   state.centerCounts = counts;
   state.centerLastVisit = lastVisit;
+}
+
+async function fetchReviewsForCenter(centerId) {
+  const { data, error } = await sb
+    .from("visit_reviews")
+    .select("*")
+    .eq("center_id", centerId)
+    .order("date", { ascending: false });
+  if (error) { console.error(error); return []; }
+  return (data || []).map(r => ({
+    id: r.id, centerId: r.center_id, date: r.date,
+    reviewer: r.reviewer, notes: r.notes || "",
+    hasImage: r.has_image, fileType: r.file_type || 'image', createdAt: r.created_at,
+  }));
+}
+
+async function insertReview(review, imageData) {
+  const { error } = await sb.from("visit_reviews").insert({
+    id: review.id, center_id: review.centerId, date: review.date,
+    reviewer: review.reviewer, notes: review.notes || null,
+    has_image: review.hasImage, file_type: review.fileType || null, created_at: review.createdAt,
+  });
+  if (error) throw error;
+  if (imageData) {
+    const { error: ie } = await sb.from("visit_review_images").insert({
+      review_id: review.id, image_data: imageData,
+    });
+    if (ie) console.error(ie);
+  }
+}
+
+async function fetchImage(reviewId) {
+  const { data, error } = await sb
+    .from("visit_review_images")
+    .select("image_data")
+    .eq("review_id", reviewId)
+    .single();
+  if (error || !data) return null;
+  return data.image_data;
+}
+
+async function removeReview(reviewId) {
+  const { error } = await sb.from("visit_reviews").delete().eq("id", reviewId);
+  if (error) throw error;
 }
 
 // ── Render ─────────────────────────────────────────────────────────────
@@ -243,12 +259,7 @@ function render() {
   if (state.view === "list") app.innerHTML = renderList();
   else if (state.view === "center") app.innerHTML = renderCenter();
   else if (state.view === "review") app.innerHTML = renderReview();
-
-  if (state.showModal) {
-    app.innerHTML += renderModal();
-    bindModal();
-  }
-
+  if (state.showModal) { app.innerHTML += renderModal(); bindModal(); }
   bindEvents();
 }
 
@@ -256,51 +267,47 @@ function renderList() {
   const filtered = CENTERS.filter(c => c.name.toLowerCase().includes(state.search.toLowerCase()));
   const items = filtered.map(c => {
     const count = state.centerCounts[c.id] || 0;
+    const last = state.centerLastVisit[c.id];
     return `<div class="card" data-action="open-center" data-id="${c.id}">
       <div class="avatar">${initials(c.name)}</div>
       <div style="flex:1;min-width:0">
         <div class="card-name">${c.name}</div>
-        <div style="font-size:12px;color:#aaa;margin-top:2px">${state.centerLastVisit[c.id] ? "Last visit: " + formatDate(state.centerLastVisit[c.id]) : "No visits yet"}</div>
+        <div class="card-sub">${last ? "Last visit: " + formatDate(last) : "No visits yet"}</div>
       </div>
       <span class="badge">${count} visit${count !== 1 ? "s" : ""}</span>
       <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </div>`;
   }).join("");
-
   return `
     <div class="search-wrap">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input id="search-input" type="text" placeholder="Search centers…" value="${escHtml(state.search)}" />
     </div>
     <span class="count-label">${filtered.length} center${filtered.length !== 1 ? "s" : ""}</span>
-    ${items || '<div class="empty"><p>No centers found.</p></div>'}
-  `;
+    ${items || '<div class="empty"><p>No centers found.</p></div>'}`;
 }
 
 function renderCenter() {
   const c = state.selectedCenter;
-  const revs = state.reviews;
-
   let revHtml = "";
   if (state.reviewsLoading) {
-    revHtml = `<div class="loading-wrap"><div class="spinner"></div></div>`;
-  } else if (revs.length === 0) {
+    revHtml = `<div class="loading-wrap"><div class="spinner"></div>Loading reviews…</div>`;
+  } else if (state.reviews.length === 0) {
     revHtml = `<div class="empty"><div class="emoji">📋</div><p>No visit reviews yet.</p><small>Tap "Add Review" after a center visit.</small></div>`;
   } else {
-    revHtml = revs.map(r => `
+    revHtml = state.reviews.map(r => `
       <div class="rev-card" data-action="open-review" data-id="${r.id}">
         <div class="rev-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </div>
         <div style="flex:1;min-width:0">
           <div class="rev-date">${formatDate(r.date)}</div>
-          <div class="rev-meta">Reviewed by ${escHtml(r.reviewer)}${r.hasImage ? " &nbsp;📷" : ""}</div>
+          <div class="rev-meta">Reviewed by ${escHtml(r.reviewer)}${r.hasImage ? (r.fileType === 'pdf' ? " &nbsp;📄" : " &nbsp;📷") : ""}</div>
           ${r.notes ? `<div class="rev-notes-preview">${escHtml(r.notes)}</div>` : ""}
         </div>
         <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </div>`).join("");
   }
-
   return `
     <button class="back-btn" data-action="go-list">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
@@ -309,30 +316,29 @@ function renderCenter() {
     <div class="section-head">
       <div>
         <div class="section-title">${escHtml(c.name)}</div>
-        <div class="section-sub">${revs.length} visit review${revs.length !== 1 ? "s" : ""}</div>
+        <div class="section-sub">${state.reviews.length} visit review${state.reviews.length !== 1 ? "s" : ""}</div>
       </div>
       <button class="add-btn" data-action="open-modal">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Review
       </button>
     </div>
-    ${revHtml}
-  `;
+    ${revHtml}`;
 }
 
 function renderReview() {
   const r = state.activeReview;
   let imgHtml = "";
   if (r.hasImage) {
-    if (state.imageLoading) {
-      imgHtml = `<div class="img-placeholder">Loading image…</div>`;
-    } else if (state.activeImage) {
-      imgHtml = `<img class="review-img" src="${state.activeImage}" alt="Visit review form" />`;
-    } else {
-      imgHtml = `<div class="img-placeholder">Image not available</div>`;
+    if (state.imageLoading) imgHtml = `<div class="img-placeholder"><div class="spinner"></div></div>`;
+    else if (state.activeImage) {
+      const isPdf = state.activeImage.startsWith('data:application/pdf');
+      imgHtml = isPdf
+        ? `<embed src="${state.activeImage}" type="application/pdf" style="width:100%;height:500px;border-radius:10px;border:1px solid #E8E8E3;margin-top:4px" />`
+        : `<img class="review-img" src="${state.activeImage}" alt="Visit review form" />`;
     }
+    else imgHtml = `<div class="img-placeholder">File not available</div>`;
   }
-
   const confirmHtml = state.deleteConfirm ? `
     <div class="confirm-box">
       <p>Delete this visit review? This cannot be undone.</p>
@@ -341,7 +347,6 @@ function renderReview() {
         <button class="confirm-cancel" data-action="cancel-delete">Cancel</button>
       </div>
     </div>` : "";
-
   return `
     <button class="back-btn" data-action="go-center">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
@@ -355,39 +360,28 @@ function renderReview() {
           Delete
         </button>
       </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          <svg style="vertical-align:middle;margin-right:4px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Date
-        </span>
-        <span class="detail-val">${formatDate(r.date)}</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">
-          <svg style="vertical-align:middle;margin-right:4px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          Reviewer
-        </span>
-        <span class="detail-val">${escHtml(r.reviewer)}</span>
-      </div>
+      <div class="detail-row"><span class="detail-label">Date</span><span class="detail-val">${formatDate(r.date)}</span></div>
+      <div class="detail-row"><span class="detail-label">Reviewer</span><span class="detail-val">${escHtml(r.reviewer)}</span></div>
       ${r.notes ? `<div class="notes-label">Notes</div><div class="notes-box">${escHtml(r.notes)}</div>` : ""}
       ${confirmHtml}
       ${r.hasImage ? `<hr class="divider"><div class="notes-label">Uploaded Review Form</div>${imgHtml}` : `<hr class="divider"><div class="no-photo">No photo uploaded for this review.</div>`}
-    </div>
-  `;
+    </div>`;
 }
 
 function renderModal() {
   const c = state.selectedCenter;
+  const isPdf = state.formImage && state.formImage.startsWith('data:application/pdf');
   const imgHtml = state.formImage
-    ? `<div class="img-preview-wrap">
-         <img class="img-preview" src="${state.formImage}" alt="Preview" />
-         <button class="remove-img" data-action="remove-img" title="Remove">&#x2715;</button>
-       </div>`
-    : `<div class="upload-btn" data-action="trigger-upload">
-         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-         Tap to upload photo of review form
-       </div>`;
-
+    ? (isPdf
+        ? `<div style="position:relative">
+             <div style="background:#F9F9F6;border:1px solid #ddd;border-radius:8px;padding:16px;display:flex;align-items:center;gap:12px">
+               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6M9 17h4"/></svg>
+               <span style="font-size:14px;color:#555;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(state.formFileName)}</span>
+             </div>
+             <button class="remove-img" data-action="remove-img" style="position:absolute;top:8px;right:8px">&#x2715;</button>
+           </div>`
+        : `<div class="img-preview-wrap"><img class="img-preview" src="${state.formImage}" alt="Preview" /><button class="remove-img" data-action="remove-img">&#x2715;</button></div>`)
+    : `<div class="upload-btn" data-action="trigger-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Tap to upload photo or PDF of review form</div>`;
   const canSave = state.formDate && state.formReviewer.trim();
   return `
     <div class="overlay" id="modal-overlay">
@@ -396,46 +390,25 @@ function renderModal() {
           <h2>Add Visit Review — ${escHtml(c.name)}</h2>
           <button class="close-btn" data-action="close-modal">&#x2715;</button>
         </div>
-        <div class="field-group">
-          <label for="f-date">Visit Date *</label>
-          <input type="date" id="f-date" value="${state.formDate}" />
-        </div>
-        <div class="field-group">
-          <label for="f-reviewer">Reviewer Name *</label>
-          <input type="text" id="f-reviewer" placeholder="Your name" value="${escHtml(state.formReviewer)}" />
-        </div>
-        <div class="field-group">
-          <label for="f-notes">Notes (optional)</label>
-          <textarea id="f-notes" placeholder="Any additional notes or observations…">${escHtml(state.formNotes)}</textarea>
-        </div>
-        <div class="field-group">
-          <label>Upload Review Form Photo (optional)</label>
-          ${imgHtml}
-        </div>
-        <button class="save-btn" data-action="save-review" ${!canSave || state.saving ? "disabled" : ""}>
-          ${state.saving ? "Saving…" : "Save Review"}
-        </button>
+        <div class="field-group"><label>Visit Date *</label><input type="date" id="f-date" value="${state.formDate}" /></div>
+        <div class="field-group"><label>Reviewer Name *</label><input type="text" id="f-reviewer" placeholder="Your name" value="${escHtml(state.formReviewer)}" /></div>
+        <div class="field-group"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any additional notes or observations…">${escHtml(state.formNotes)}</textarea></div>
+        <div class="field-group"><label>Upload Review Form Photo (optional)</label>${imgHtml}</div>
+        <button class="save-btn" data-action="save-review" ${!canSave || state.saving ? "disabled" : ""}>${state.saving ? "Saving…" : "Save Review"}</button>
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
-// ── Bind events ────────────────────────────────────────────────────────
+// ── Events ─────────────────────────────────────────────────────────────
 function bindEvents() {
-  // Search
   const si = document.getElementById("search-input");
   if (si) si.addEventListener("input", e => { state.search = e.target.value; render(); });
-
-  // Delegated clicks
   document.getElementById("app").addEventListener("click", handleClick);
 }
 
 function bindModal() {
-  // Overlay click to close
   const overlay = document.getElementById("modal-overlay");
   if (overlay) overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
-
-  // Live sync form fields
   const fd = document.getElementById("f-date");
   const fr = document.getElementById("f-reviewer");
   const fn = document.getElementById("f-notes");
@@ -448,147 +421,104 @@ function handleClick(e) {
   const el = e.target.closest("[data-action]");
   if (!el) return;
   const action = el.dataset.action;
-
-  if (action === "open-center") {
-    const center = CENTERS.find(c => c.id === el.dataset.id);
-    if (center) openCenter(center);
-  } else if (action === "go-list") {
-    state.view = "list"; state.selectedCenter = null; state.reviews = []; render();
-  } else if (action === "go-center") {
-    state.view = "center"; state.activeReview = null; state.activeImage = null; state.deleteConfirm = false; render();
-  } else if (action === "open-review") {
-    const rev = state.reviews.find(r => r.id === el.dataset.id);
-    if (rev) openReview(rev);
-  } else if (action === "open-modal") {
-    state.showModal = true; render();
-  } else if (action === "close-modal") {
-    closeModal();
-  } else if (action === "trigger-upload") {
-    document.getElementById("file-input").click();
-  } else if (action === "remove-img") {
-    state.formImage = null; render();
-  } else if (action === "save-review") {
-    saveReview();
-  } else if (action === "start-delete") {
-    state.deleteConfirm = true; render();
-  } else if (action === "confirm-delete") {
-    doDelete();
-  } else if (action === "cancel-delete") {
-    state.deleteConfirm = false; render();
-  }
+  if (action === "open-center") { const c = CENTERS.find(c => c.id === el.dataset.id); if (c) openCenter(c); }
+  else if (action === "go-list") { state.view = "list"; state.selectedCenter = null; state.reviews = []; render(); }
+  else if (action === "go-center") { state.view = "center"; state.activeReview = null; state.activeImage = null; state.deleteConfirm = false; render(); }
+  else if (action === "open-review") { const r = state.reviews.find(r => r.id === el.dataset.id); if (r) openReview(r); }
+  else if (action === "open-modal") { state.showModal = true; render(); }
+  else if (action === "close-modal") { closeModal(); }
+  else if (action === "trigger-upload") { document.getElementById("file-input").click(); }
+  else if (action === "remove-img") { state.formImage = null; render(); }
+  else if (action === "save-review") { saveReview(); }
+  else if (action === "start-delete") { state.deleteConfirm = true; render(); }
+  else if (action === "confirm-delete") { doDelete(); }
+  else if (action === "cancel-delete") { state.deleteConfirm = false; render(); }
 }
 
 function closeModal() {
-  state.showModal = false;
-  state.formDate = todayStr();
-  state.formReviewer = "";
-  state.formNotes = "";
-  state.formImage = null;
+  state.showModal = false; state.formDate = todayStr();
+  state.formReviewer = ""; state.formNotes = ""; state.formImage = null; state.formFileName = "";
   render();
 }
 
-function openCenter(center) {
-  state.selectedCenter = center;
-  state.view = "center";
-  state.reviewsLoading = true;
-  state.reviews = [];
+async function openCenter(center) {
+  state.selectedCenter = center; state.view = "center";
+  state.reviewsLoading = true; state.reviews = [];
   render();
-
-  const idx = getIndex(center.id);
-  const loaded = idx.map(getReview).filter(Boolean);
-  state.reviews = loaded;
+  state.reviews = await fetchReviewsForCenter(center.id);
   state.reviewsLoading = false;
   render();
 }
 
-function openReview(rev) {
-  state.activeReview = rev;
-  state.activeImage = null;
-  state.imageLoading = rev.hasImage;
-  state.deleteConfirm = false;
+async function openReview(rev) {
+  state.activeReview = rev; state.activeImage = null;
+  state.imageLoading = rev.hasImage; state.deleteConfirm = false;
   state.view = "review";
   render();
-
-  if (rev.hasImage) {
-    setTimeout(() => {
-      state.activeImage = getImage(rev.id);
-      state.imageLoading = false;
-      render();
-    }, 50);
-  }
+  if (rev.hasImage) { state.activeImage = await fetchImage(rev.id); state.imageLoading = false; render(); }
 }
 
-function saveReview() {
-  // Read latest form values from DOM before saving
+async function saveReview() {
   const fd = document.getElementById("f-date");
   const fr = document.getElementById("f-reviewer");
   const fn = document.getElementById("f-notes");
   if (fd) state.formDate = fd.value;
   if (fr) state.formReviewer = fr.value;
   if (fn) state.formNotes = fn.value;
-
   if (!state.formDate || !state.formReviewer.trim()) return;
-  state.saving = true;
-  render();
-
-  const id = state.selectedCenter.id + "-" + Date.now();
+  state.saving = true; render();
   const review = {
-    id,
-    centerId: state.selectedCenter.id,
-    date: state.formDate,
-    reviewer: state.formReviewer.trim(),
-    notes: state.formNotes.trim(),
+    id: state.selectedCenter.id + "-" + Date.now(),
+    centerId: state.selectedCenter.id, date: state.formDate,
+    reviewer: state.formReviewer.trim(), notes: state.formNotes.trim(),
     hasImage: !!state.formImage,
+    fileType: state.formImage ? (state.formImage.startsWith('data:application/pdf') ? 'pdf' : 'image') : null,
     createdAt: new Date().toISOString(),
   };
-
-  const idx = getIndex(state.selectedCenter.id);
-  idx.unshift(id);
-  setIndex(state.selectedCenter.id, idx);
-  setReview(id, review);
-  if (state.formImage) setImage(id, state.formImage);
-
-  state.centerCounts[state.selectedCenter.id] = idx.length;
-  if (!state.centerLastVisit[state.selectedCenter.id] || review.date >= state.centerLastVisit[state.selectedCenter.id]) {
-    state.centerLastVisit[state.selectedCenter.id] = review.date;
+  try {
+    await insertReview(review, state.formImage);
+    state.centerCounts[state.selectedCenter.id] = (state.centerCounts[state.selectedCenter.id] || 0) + 1;
+    if (!state.centerLastVisit[state.selectedCenter.id] || review.date >= state.centerLastVisit[state.selectedCenter.id]) {
+      state.centerLastVisit[state.selectedCenter.id] = review.date;
+    }
+    state.reviews = [review, ...state.reviews];
+    state.saving = false;
+    closeModal();
+    showToast("Review saved!");
+  } catch (err) {
+    state.saving = false; render();
+    showToast("Error saving — see console for details.");
+    console.error(err);
   }
-  state.reviews = [review, ...state.reviews];
-  state.saving = false;
-  closeModal();
 }
 
-function doDelete() {
+async function doDelete() {
   const rev = state.activeReview;
-  deleteReviewData(state.selectedCenter.id, rev.id);
-  state.centerCounts[state.selectedCenter.id] = Math.max(0, (state.centerCounts[state.selectedCenter.id] || 1) - 1);
-  state.reviews = state.reviews.filter(r => r.id !== rev.id);
-  const remaining = getIndex(state.selectedCenter.id);
-  const lastRev = remaining.length > 0 ? getReview(remaining[0]) : null;
-  state.centerLastVisit[state.selectedCenter.id] = lastRev ? lastRev.date : null;
-  state.view = "center";
-  state.activeReview = null;
-  state.deleteConfirm = false;
-  render();
+  try {
+    await removeReview(rev.id);
+    state.centerCounts[state.selectedCenter.id] = Math.max(0, (state.centerCounts[state.selectedCenter.id] || 1) - 1);
+    state.reviews = state.reviews.filter(r => r.id !== rev.id);
+    state.centerLastVisit[state.selectedCenter.id] = state.reviews.length > 0 ? state.reviews[0].date : null;
+    state.view = "center"; state.activeReview = null; state.deleteConfirm = false;
+    render();
+    showToast("Review deleted.");
+  } catch (err) {
+    showToast("Error deleting — see console for details.");
+    console.error(err);
+  }
 }
 
-function escHtml(str) {
-  if (!str) return "";
-  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-
-// ── File upload ────────────────────────────────────────────────────────
 document.getElementById("file-input").addEventListener("change", function(e) {
   const file = e.target.files[0];
   if (!file) return;
+  state.formFileName = file.name;
   const reader = new FileReader();
   reader.onload = ev => { state.formImage = ev.target.result; render(); };
   reader.readAsDataURL(file);
   this.value = "";
 });
 
-// ── Init ───────────────────────────────────────────────────────────────
-loadCenterCounts();
-render();
+(async () => { await fetchCenterMeta(); render(); })();
 </script>
 </body>
 </html>
