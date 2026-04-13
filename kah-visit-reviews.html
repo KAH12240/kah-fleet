@@ -79,7 +79,9 @@
   input[type="date"]:focus, input[type="text"]:focus { border-color: #F59E0B; }
   textarea { width: 100%; border-radius: 8px; border: 1px solid #ddd; padding: 10px 12px; font-size: 15px; color: #1a1a1a; outline: none; resize: vertical; min-height: 90px; background: #fff; }
   textarea:focus { border-color: #F59E0B; }
-  .no-review-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; margin-bottom: 16px; cursor: pointer; }
+  .sort-row { display: flex; gap: 6px; margin-bottom: 12px; }
+  .sort-btn { flex: 1; padding: 6px 8px; border-radius: 8px; border: 1px solid #ddd; background: #fff; font-size: 12px; color: #888; cursor: pointer; text-align: center; }
+  .sort-btn.active { background: #FFFBEB; border-color: #F59E0B; color: #B45309; font-weight: 500; } display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; margin-bottom: 16px; cursor: pointer; }
   .no-review-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: #F59E0B; cursor: pointer; flex-shrink: 0; }
   .no-review-row label { font-size: 14px; color: #92400E; font-weight: 500; cursor: pointer; margin: 0; }
   .no-review-tag { background: #FEF3C7; color: #92400E; border-radius: 6px; padding: 1px 7px; font-size: 11px; font-weight: 500; margin-left: 6px; } border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; color: #B45309; font-size: 14px; background: #FFFBEB; display: flex; flex-direction: column; align-items: center; gap: 8px; }
@@ -169,6 +171,7 @@ let state = {
   centerLastVisit: {},
   centerLastReview: {},
   search: "",
+  sort: "alpha",
   showModal: false,
   formDate: todayStr(),
   formReviewer: "",
@@ -272,7 +275,24 @@ function render() {
 }
 
 function renderList() {
-  const filtered = CENTERS.filter(c => c.name.toLowerCase().includes(state.search.toLowerCase()));
+  let filtered = CENTERS.filter(c => c.name.toLowerCase().includes(state.search.toLowerCase()));
+  if (state.sort === "alpha") {
+    filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+  } else if (state.sort === "oldest-visit") {
+    filtered = [...filtered].sort((a, b) => {
+      if (!state.centerLastVisit[a.id] && !state.centerLastVisit[b.id]) return a.name.localeCompare(b.name);
+      if (!state.centerLastVisit[a.id]) return -1;
+      if (!state.centerLastVisit[b.id]) return 1;
+      return state.centerLastVisit[a.id] < state.centerLastVisit[b.id] ? -1 : 1;
+    });
+  } else if (state.sort === "oldest-review") {
+    filtered = [...filtered].sort((a, b) => {
+      if (!state.centerLastReview[a.id] && !state.centerLastReview[b.id]) return a.name.localeCompare(b.name);
+      if (!state.centerLastReview[a.id]) return -1;
+      if (!state.centerLastReview[b.id]) return 1;
+      return state.centerLastReview[a.id] < state.centerLastReview[b.id] ? -1 : 1;
+    });
+  }
   const items = filtered.map(c => {
     const count = state.centerCounts[c.id] || 0;
     const lastV = state.centerLastVisit[c.id];
@@ -294,6 +314,11 @@ function renderList() {
     <div class="search-wrap">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input id="search-input" type="text" placeholder="Search centers…" value="${escHtml(state.search)}" />
+    </div>
+    <div class="sort-row">
+      <button class="sort-btn ${state.sort === 'alpha' ? 'active' : ''}" data-action="set-sort" data-sort="alpha">A–Z</button>
+      <button class="sort-btn ${state.sort === 'oldest-visit' ? 'active' : ''}" data-action="set-sort" data-sort="oldest-visit">Oldest visited first</button>
+      <button class="sort-btn ${state.sort === 'oldest-review' ? 'active' : ''}" data-action="set-sort" data-sort="oldest-review">Oldest reviewed first</button>
     </div>
     <span class="count-label">${filtered.length} center${filtered.length !== 1 ? "s" : ""}</span>
     ${items || '<div class="empty"><p>No centers found.</p></div>'}`;
@@ -475,7 +500,7 @@ function handleClick(e) {
   else if (action === "open-modal") { state.showModal = true; render(); }
   else if (action === "close-modal") { closeModal(); }
   else if (action === "trigger-upload") { document.getElementById("file-input").click(); }
-  else if (action === "toggle-no-review") { state.formNoReview = !state.formNoReview; render(); }
+  else if (action === "set-sort") { state.sort = el.dataset.sort; render(); }
   else if (action === "remove-file") { state.formFile = null; state.formFileName = ""; state.formFileType = null; state.formPreviewUrl = null; render(); }
   else if (action === "save-review") { saveReview(); }
   else if (action === "start-delete") { state.deleteConfirm = true; render(); }
