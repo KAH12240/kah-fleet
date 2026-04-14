@@ -120,7 +120,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<input type="file" id="file-input" accept="image/*,.pdf" style="display:none" />
+<input type="file" id="file-input" accept="image/*,.pdf" multiple style="display:none" />
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -181,7 +181,7 @@ let state = {
   formFileName: "",
   formFileType: null,
   formPreviewUrl: null,
-  formNoReview: false,
+  formFiles: [],
   saving: false,
   uploadProgress: 0,
   deleteConfirm: false,
@@ -371,16 +371,17 @@ function renderReview() {
   const r = state.activeReview;
   let fileHtml = "";
   if (r.hasFile && r.fileUrl) {
-    if (r.fileType === "pdf") {
-      fileHtml = `
-        <embed src="${escHtml(r.fileUrl)}" type="application/pdf" class="pdf-viewer" />
-        <a class="open-link" href="${escHtml(r.fileUrl)}" target="_blank">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Open PDF
-        </a>`;
-    } else {
-      fileHtml = `<img class="review-img" src="${escHtml(r.fileUrl)}" alt="Visit review form" />`;
-    }
+    const urls = r.fileUrl.split(",");
+    fileHtml = urls.map((url, i) => {
+      const isPdf = url.includes(".pdf") || r.fileType === "pdf";
+      return isPdf
+        ? `<embed src="${escHtml(url)}" type="application/pdf" class="pdf-viewer" style="margin-bottom:8px" />
+           <a class="open-link" href="${escHtml(url)}" target="_blank" style="margin-bottom:12px">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+             Open PDF ${urls.length > 1 ? (i+1) : ""}
+           </a>`
+        : `<img class="review-img" src="${escHtml(url)}" alt="Review form ${i+1}" style="margin-bottom:8px" />`;
+    }).join("");
   } else if (r.hasFile) {
     fileHtml = `<div style="font-size:13px;color:#bbb;margin-top:4px">File unavailable</div>`;
   }
@@ -419,21 +420,31 @@ function renderReview() {
 function renderModal() {
   const c = state.selectedCenter;
   let uploadHtml = "";
-  if (state.formFile) {
-    const isImg = state.formFileType !== "pdf";
-    uploadHtml = `
-      <div class="file-preview">
+  if (state.formFiles.length > 0) {
+    const fileList = state.formFiles.map((f, i) => `
+      <div class="file-preview" style="margin-bottom:6px">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        <span class="file-preview-name">${escHtml(state.formFileName)}</span>
-        <button class="file-preview-remove" data-action="remove-file">&#x2715;</button>
+        <span class="file-preview-name">${escHtml(f.name)}</span>
+        <button class="file-preview-remove" data-action="remove-file" data-index="${i}">&#x2715;</button>
       </div>
-      ${isImg && state.formPreviewUrl ? `<img class="img-preview" src="${state.formPreviewUrl}" alt="Preview" />` : ""}`;
+      ${f.previewUrl ? `<img class="img-preview" src="${f.previewUrl}" alt="Preview" style="margin-bottom:6px" />` : ""}`
+    ).join("");
+    uploadHtml = `
+      ${fileList}
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <div class="upload-area" data-action="trigger-upload" style="padding:12px;flex:1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:18px;height:18px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span style="font-size:13px">Add more files</span>
+        </div>
+      </div>`;
   } else {
     uploadHtml = `
-      <div class="upload-area" data-action="trigger-upload">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <span>Tap to upload photo or PDF of review form</span>
-        <span style="font-size:12px;color:#aaa">Supports JPG, PNG, PDF</span>
+      <div style="display:flex;gap:8px">
+        <div class="upload-area" data-action="trigger-upload" style="flex:1;padding:16px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>Upload files</span>
+          <span style="font-size:11px;color:#aaa">JPG, PNG, PDF — tap &amp; hold to select multiple</span>
+        </div>
       </div>`;
   }
 
@@ -502,7 +513,11 @@ function handleClick(e) {
   else if (action === "close-modal") { closeModal(); }
   else if (action === "trigger-upload") { document.getElementById("file-input").click(); }
   else if (action === "set-sort") { state.sort = el.dataset.sort; render(); }
-  else if (action === "remove-file") { state.formFile = null; state.formFileName = ""; state.formFileType = null; state.formPreviewUrl = null; render(); }
+  else if (action === "remove-file") { 
+    const idx = parseInt(el.dataset.index);
+    state.formFiles = state.formFiles.filter((_, i) => i !== idx);
+    render(); 
+  }
   else if (action === "save-review") { saveReview(); }
   else if (action === "start-delete") { state.deleteConfirm = true; render(); }
   else if (action === "confirm-delete") { doDelete(); }
@@ -513,7 +528,7 @@ function closeModal() {
   state.showModal = false; state.formDate = todayStr();
   state.formReviewer = ""; state.formNotes = "";
   state.formFile = null; state.formFileName = ""; state.formFileType = null; state.formPreviewUrl = null;
-  state.formNoReview = false; state.saving = false; state.uploadProgress = 0;
+  state.formFiles = []; state.formNoReview = false; state.saving = false; state.uploadProgress = 0;
   render();
 }
 
@@ -547,18 +562,22 @@ async function saveReview() {
   const review = {
     id: reviewId, centerId: state.selectedCenter.id,
     date: state.formDate, reviewer: state.formReviewer.trim(),
-    notes: state.formNotes.trim(), hasFile: !!state.formFile && !state.formNoReview,
-    fileType: state.formNoReview ? null : state.formFileType,
+    notes: state.formNotes.trim(), hasFile: state.formFiles.length > 0 && !state.formNoReview,
+    fileType: state.formNoReview ? null : (state.formFiles.length > 0 ? state.formFiles[0].fileType : null),
     noReview: state.formNoReview, createdAt: new Date().toISOString(),
   };
 
   try {
-    let fileUrl = null;
-    if (state.formFile) {
-      state.uploadProgress = 30; render();
-      fileUrl = await uploadFile(reviewId, state.formFile);
-      state.uploadProgress = 80; render();
+    let fileUrls = [];
+    if (state.formFiles.length > 0 && !state.formNoReview) {
+      for (let i = 0; i < state.formFiles.length; i++) {
+        state.uploadProgress = Math.round(20 + (60 * i / state.formFiles.length)); render();
+        const url = await uploadFile(reviewId + "-" + i, state.formFiles[i].file);
+        fileUrls.push(url);
+      }
+      state.uploadProgress = 85; render();
     }
+    const fileUrl = fileUrls.length > 0 ? fileUrls.join(",") : null;
     await insertReview(review, fileUrl);
     state.uploadProgress = 100;
     review.fileUrl = fileUrl;
@@ -599,19 +618,25 @@ async function doDelete() {
 
 // ── File input ─────────────────────────────────────────────────────────
 document.getElementById("file-input").addEventListener("change", function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  state.formFile = file;
-  state.formFileName = file.name;
-  state.formFileType = file.type === "application/pdf" ? "pdf" : "image";
-  if (state.formFileType === "image") {
-    const reader = new FileReader();
-    reader.onload = ev => { state.formPreviewUrl = ev.target.result; render(); };
-    reader.readAsDataURL(file);
-  } else {
-    state.formPreviewUrl = null;
-    render();
-  }
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  let loaded = 0;
+  files.forEach(file => {
+    const entry = { file, name: file.name, fileType: file.type === "application/pdf" ? "pdf" : "image", previewUrl: null };
+    if (entry.fileType === "image") {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        entry.previewUrl = ev.target.result;
+        loaded++;
+        if (loaded === files.length) render();
+      };
+      reader.readAsDataURL(file);
+    } else {
+      loaded++;
+      if (loaded === files.length) render();
+    }
+    state.formFiles.push(entry);
+  });
   this.value = "";
 });
 
