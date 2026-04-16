@@ -305,7 +305,7 @@ function renderList() {
       <div style="flex:1;min-width:0">
         <div class="card-name">${c.name}</div>
         <div class="card-dates">
-          <div class="card-date-row">Last visit only: <span>${lastV ? formatDate(lastV) : "Never"}</span></div>
+          <div class="card-date-row">Last visited: <span>${lastV ? formatDate(lastV) : "Never"}</span></div>
           <div class="card-date-row">Last reviewed: <span>${lastR ? formatDate(lastR) : "Never"}</span></div>
         </div>
       </div>
@@ -344,7 +344,7 @@ function renderCenter() {
         </div>
         <div style="flex:1;min-width:0">
           <div class="rev-date">${formatDate(r.date)}${tag}</div>
-          <div class="rev-meta">Visited by ${escHtml(r.reviewer)}${icon ? " &nbsp;" + icon : ""}</div>
+          <div class="rev-meta">${r.noReview ? "Visited by" : "Reviewed by"} ${escHtml(r.reviewer)}${icon ? " &nbsp;" + icon : ""}</div>
           ${r.notes ? `<div class="rev-notes-preview">${escHtml(r.notes)}</div>` : ""}
         </div>
         <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
