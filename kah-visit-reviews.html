@@ -6,7 +6,7 @@
 <title>KAH Center Visit Reviews</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F5F5F0; min-height: 100vh; color: #1a1a1a; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #FEF08A; min-height: 100vh; color: #1a1a1a; }
   input, textarea, button { font-family: inherit; }
   #header { background: #fff; border-bottom: 1px solid #E5E5E0; padding: 14px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
   #logo { width: 44px; height: 44px; border-radius: 9px; overflow: hidden; flex-shrink: 0; background: #fff; }
@@ -15,8 +15,7 @@
   #header-text p { font-size: 12px; color: #888; }
   #app { padding: 20px 16px; max-width: 660px; margin: 0 auto; }
   .search-wrap { position: relative; margin-bottom: 10px; }
-  .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #aaa; pointer-events: none; }
-  .search-wrap input { width: 100%; padding: 0 12px 0 36px; height: 40px; border-radius: 9px; border: 1px solid #ddd; background: #fff; font-size: 14px; outline: none; color: #1a1a1a; }
+  .search-wrap input { width: 100%; padding: 0 12px; height: 40px; border-radius: 9px; border: 1px solid #ddd; background: #fff; font-size: 14px; outline: none; color: #1a1a1a; box-sizing: border-box; }
   .search-wrap input:focus { border-color: #F59E0B; }
   .count-label { font-size: 12px; color: #999; margin-bottom: 12px; display: block; }
   .card { background: #fff; border-radius: 10px; border: 1px solid #E8E8E3; margin-bottom: 8px; padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: border-color 0.15s; }
@@ -315,7 +314,6 @@ function renderList() {
   }).join("");
   return `
     <div class="search-wrap">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input id="search-input" type="text" placeholder="Search centers…" value="${escHtml(state.search)}" />
     </div>
     <div class="sort-row">
