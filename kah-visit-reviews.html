@@ -458,9 +458,9 @@ function renderModal() {
     <div class="progress-bar-wrap"><div class="progress-bar" style="width:${state.uploadProgress}%"></div></div>
     <div class="progress-label">${state.uploadProgress < 100 ? "Uploading… " + state.uploadProgress + "%" : "Saving…"}</div>` : "";
 
-  const reviewFields = state.formNoReview ? "" : `
+  const reviewFields = `
     <div class="field-group"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any additional notes or observations…">${escHtml(state.formNotes)}</textarea></div>
-    <div class="field-group"><label>Upload Review Form (optional)</label>${uploadHtml}</div>`;
+    ${!state.formNoReview ? `<div class="field-group"><label>Upload Review Form (optional)</label>${uploadHtml}</div>` : ""}`;
 
   return `
     <div class="overlay" id="modal-overlay">
