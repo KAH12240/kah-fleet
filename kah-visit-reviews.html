@@ -525,6 +525,7 @@ function handleClick(e) {
     render(); 
   }
   else if (action === "save-review") { saveReview(); }
+  else if (action === "start-delete") { state.deleteConfirm = true; render(); }
   else if (action === "confirm-delete") { doDelete(); }
   else if (action === "cancel-delete") { state.deleteConfirm = false; render(); }
 }
