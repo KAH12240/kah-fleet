@@ -516,8 +516,20 @@ function handleClick(e) {
   else if (action === "close-modal") { closeModal(); }
   else if (action === "trigger-upload") { document.getElementById("file-input").click(); }
   else if (action === "set-sort") { state.sort = el.dataset.sort; render(); }
-  else if (action === "set-type-review") { state.formNoReview = false; render(); }
-  else if (action === "set-type-visit") { state.formNoReview = true; render(); }
+  else if (action === "set-type-review") { 
+    const fn = document.getElementById("f-notes");
+    if (fn) state.formNotes = fn.value;
+    state.formNoReview = false; 
+    state.showModal = true;
+    render(); 
+  }
+  else if (action === "set-type-visit") { 
+    const fn = document.getElementById("f-notes");
+    if (fn) state.formNotes = fn.value;
+    state.formNoReview = true; 
+    state.showModal = true;
+    render(); 
+  }
   else if (action === "remove-file") { 
     const idx = parseInt(el.dataset.index);
     state.formFiles = state.formFiles.filter((_, i) => i !== idx);
