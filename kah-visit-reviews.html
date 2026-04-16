@@ -479,9 +479,12 @@ function renderModal() {
             <option value="Bob" ${state.formReviewer === "Bob" ? "selected" : ""}>Bob</option>
           </select>
         </div>
-        <div class="no-review-row" data-action="toggle-no-review">
-          <input type="checkbox" id="f-no-review" ${state.formNoReview ? "checked" : ""} />
-          <label for="f-no-review">Center visit, no official review</label>
+        <div class="field-group">
+          <label>Type *</label>
+          <div style="display:flex;gap:8px">
+            <button type="button" data-action="set-type-review" style="flex:1;height:42px;border-radius:8px;border:2px solid ${!state.formNoReview ? '#F59E0B' : '#ddd'};background:${!state.formNoReview ? '#FFFBEB' : '#fff'};color:${!state.formNoReview ? '#B45309' : '#888'};font-size:15px;font-weight:${!state.formNoReview ? '600' : '400'};cursor:pointer;">Review</button>
+            <button type="button" data-action="set-type-visit" style="flex:1;height:42px;border-radius:8px;border:2px solid ${state.formNoReview ? '#F59E0B' : '#ddd'};background:${state.formNoReview ? '#FFFBEB' : '#fff'};color:${state.formNoReview ? '#B45309' : '#888'};font-size:15px;font-weight:${state.formNoReview ? '600' : '400'};cursor:pointer;">Visit</button>
+          </div>
         </div>
         ${reviewFields}
         ${progressHtml}
@@ -513,6 +516,8 @@ function handleClick(e) {
   else if (action === "close-modal") { closeModal(); }
   else if (action === "trigger-upload") { document.getElementById("file-input").click(); }
   else if (action === "set-sort") { state.sort = el.dataset.sort; render(); }
+  else if (action === "set-type-review") { state.formNoReview = false; render(); }
+  else if (action === "set-type-visit") { state.formNoReview = true; render(); }
   else if (action === "remove-file") { 
     const idx = parseInt(el.dataset.index);
     state.formFiles = state.formFiles.filter((_, i) => i !== idx);
