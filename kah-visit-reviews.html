@@ -259,8 +259,10 @@ async function insertReview(review, fileUrl) {
 
 async function removeReview(reviewId, fileType) {
   if (fileType) {
-    const ext = fileType === "pdf" ? "pdf" : "jpg";
-    await sb.storage.from("review-files").remove([`${reviewId}.${ext}`]);
+    try {
+      const ext = fileType === "pdf" ? "pdf" : "jpg";
+      await sb.storage.from("review-files").remove([`${reviewId}-0.${ext}`, `${reviewId}.${ext}`]);
+    } catch (e) { console.warn("Storage cleanup failed (non-critical):", e); }
   }
   const { error } = await sb.from("visit_reviews").delete().eq("id", reviewId);
   if (error) throw error;
