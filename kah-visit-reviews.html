@@ -275,7 +275,12 @@ function render() {
   else if (state.view === "center") app.innerHTML = renderCenter();
   else if (state.view === "review") app.innerHTML = renderReview();
   if (state.showModal) { app.innerHTML += renderModal(); bindModal(); }
-  bindEvents();
+  bindSearchInput();
+}
+
+function bindSearchInput() {
+  const si = document.getElementById("search-input");
+  if (si) si.addEventListener("input", e => { state.search = e.target.value; render(); });
 }
 
 function renderList() {
@@ -492,11 +497,6 @@ function renderModal() {
 }
 
 // ── Events ─────────────────────────────────────────────────────────────
-function bindEvents() {
-  const si = document.getElementById("search-input");
-  if (si) si.addEventListener("input", e => { state.search = e.target.value; render(); });
-  document.getElementById("app").addEventListener("click", handleClick);
-}
 function bindModal() {
   const overlay = document.getElementById("modal-overlay");
   if (overlay) overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
@@ -648,6 +648,7 @@ document.getElementById("file-input").addEventListener("change", function(e) {
 });
 
 // ── Init ───────────────────────────────────────────────────────────────
+document.getElementById("app").addEventListener("click", handleClick);
 (async () => { await fetchCenterMeta(); render(); })();
 </script>
 </body>
