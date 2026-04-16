@@ -213,14 +213,8 @@ async function fetchCenterMeta() {
   CENTERS.forEach(c => { counts[c.id] = 0; lastVisit[c.id] = null; lastReview[c.id] = null; });
   (data || []).forEach(r => {
     counts[r.center_id] = (counts[r.center_id] || 0) + 1;
-    if (!lastVisit[r.center_id]) lastVisit[r.center_id] = r.date;
+    if (r.no_review && !lastVisit[r.center_id]) lastVisit[r.center_id] = r.date;
     if (!r.no_review && !lastReview[r.center_id]) lastReview[r.center_id] = r.date;
-  });
-  // If last review is more recent than last visit, use review date for visited too
-  CENTERS.forEach(c => {
-    if (lastReview[c.id] && (!lastVisit[c.id] || lastReview[c.id] > lastVisit[c.id])) {
-      lastVisit[c.id] = lastReview[c.id];
-    }
   });
   state.centerCounts = counts;
   state.centerLastVisit = lastVisit;
@@ -311,7 +305,7 @@ function renderList() {
       <div style="flex:1;min-width:0">
         <div class="card-name">${c.name}</div>
         <div class="card-dates">
-          <div class="card-date-row">Last visited: <span>${lastV ? formatDate(lastV) : "Never"}</span></div>
+          <div class="card-date-row">Last visit only: <span>${lastV ? formatDate(lastV) : "Never"}</span></div>
           <div class="card-date-row">Last reviewed: <span>${lastR ? formatDate(lastR) : "Never"}</span></div>
         </div>
       </div>
@@ -588,11 +582,14 @@ async function saveReview() {
     state.uploadProgress = 100;
     review.fileUrl = fileUrl;
     state.centerCounts[state.selectedCenter.id] = (state.centerCounts[state.selectedCenter.id] || 0) + 1;
-    if (!state.centerLastVisit[state.selectedCenter.id] || review.date >= state.centerLastVisit[state.selectedCenter.id]) {
-      state.centerLastVisit[state.selectedCenter.id] = review.date;
-    }
-    if (!review.noReview && (!state.centerLastReview[state.selectedCenter.id] || review.date >= state.centerLastReview[state.selectedCenter.id])) {
-      state.centerLastReview[state.selectedCenter.id] = review.date;
+    if (review.noReview) {
+      if (!state.centerLastVisit[state.selectedCenter.id] || review.date >= state.centerLastVisit[state.selectedCenter.id]) {
+        state.centerLastVisit[state.selectedCenter.id] = review.date;
+      }
+    } else {
+      if (!state.centerLastReview[state.selectedCenter.id] || review.date >= state.centerLastReview[state.selectedCenter.id]) {
+        state.centerLastReview[state.selectedCenter.id] = review.date;
+      }
     }
     state.reviews = [review, ...state.reviews];
     state.saving = false;
@@ -611,9 +608,10 @@ async function doDelete() {
     await removeReview(r.id, r.fileType);
     state.centerCounts[state.selectedCenter.id] = Math.max(0, (state.centerCounts[state.selectedCenter.id] || 1) - 1);
     state.reviews = state.reviews.filter(x => x.id !== r.id);
-    state.centerLastVisit[state.selectedCenter.id] = state.reviews.length > 0 ? state.reviews[0].date : null;
     const lastRev = state.reviews.find(x => !x.noReview);
+    const lastVis = state.reviews.find(x => x.noReview);
     state.centerLastReview[state.selectedCenter.id] = lastRev ? lastRev.date : null;
+    state.centerLastVisit[state.selectedCenter.id] = lastVis ? lastVis.date : null;
     state.view = "center"; state.activeReview = null; state.deleteConfirm = false;
     render(); showToast("Review deleted.");
   } catch (err) {
