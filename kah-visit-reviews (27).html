@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KAH Center Visit Reviews</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #FEF08A; min-height: 100vh; color: #1a1a1a; }
+  input, textarea, button { font-family: inherit; }
+  #header { background: #fff; border-bottom: 1px solid #E5E5E0; padding: 14px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
+  #logo { width: 44px; height: 44px; border-radius: 9px; overflow: hidden; flex-shrink: 0; background: #fff; }
+  #logo img { width: 100%; height: 100%; object-fit: cover; }
+  #header-text h1 { font-size: 16px; font-weight: 600; }
+  #header-text p { font-size: 12px; color: #888; }
+  #app { padding: 20px 16px; max-width: 660px; margin: 0 auto; }
+  .search-wrap { position: relative; margin-bottom: 10px; }
+  .search-wrap input { width: 100%; padding: 0 12px; height: 40px; border-radius: 9px; border: 1px solid #ddd; background: #fff; font-size: 14px; outline: none; color: #1a1a1a; box-sizing: border-box; }
+  .search-wrap input:focus { border-color: #F59E0B; }
+  .count-label { font-size: 12px; color: #999; margin-bottom: 12px; display: block; }
+  .card { background: #fff; border-radius: 10px; border: 1px solid #E8E8E3; margin-bottom: 8px; padding: 14px 16px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: border-color 0.15s; }
+  .card:hover { border-color: #F59E0B; }
+  .avatar { width: 40px; height: 40px; border-radius: 9px; background: #FFFBEB; display: flex; align-items: center; justify-content: center; color: #B45309; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+  .card-name { font-size: 15px; font-weight: 500; }
+  .card-sub { font-size: 12px; color: #aaa; margin-top: 1px; }
+  .card-dates { display: flex; flex-direction: column; gap: 1px; margin-top: 2px; }
+  .card-date-row { font-size: 11px; color: #bbb; }
+  .card-date-row span { color: #888; font-weight: 500; }
+  .badge { background: #FFFBEB; color: #B45309; border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 500; flex-shrink: 0; }
+  .chevron { color: #ccc; flex-shrink: 0; }
+  .back-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; color: #888; font-size: 14px; padding: 4px 0; margin-bottom: 16px; }
+  .back-btn:hover { color: #F59E0B; }
+  .section-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .section-title { font-size: 20px; font-weight: 600; }
+  .section-sub { font-size: 13px; color: #888; margin-top: 2px; }
+  .add-btn { display: flex; align-items: center; gap: 6px; background: #F59E0B; color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 14px; font-weight: 500; cursor: pointer; flex-shrink: 0; }
+  .add-btn:hover { background: #D97706; }
+  .rev-card { background: #fff; border-radius: 10px; border: 1px solid #E8E8E3; margin-bottom: 8px; padding: 14px 16px; cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: border-color 0.15s; }
+  .rev-card:hover { border-color: #F59E0B; }
+  .rev-icon { width: 36px; height: 36px; border-radius: 8px; background: #FFFBEB; display: flex; align-items: center; justify-content: center; color: #B45309; flex-shrink: 0; }
+  .rev-date { font-size: 15px; font-weight: 500; }
+  .rev-meta { font-size: 13px; color: #888; margin-top: 2px; }
+  .rev-notes-preview { font-size: 13px; color: #999; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 380px; }
+  .empty { text-align: center; padding: 52px 20px; color: #aaa; }
+  .empty .emoji { font-size: 44px; margin-bottom: 12px; }
+  .empty p { font-size: 15px; }
+  .empty small { font-size: 13px; }
+  .detail-card { background: #fff; border-radius: 10px; border: 1px solid #E8E8E3; padding: 18px; }
+  .detail-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .detail-head h2 { font-size: 18px; font-weight: 600; }
+  .detail-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .detail-label { font-size: 13px; color: #888; width: 90px; flex-shrink: 0; }
+  .detail-val { font-size: 15px; font-weight: 500; }
+  .notes-box { background: #F9F9F6; border-radius: 8px; padding: 12px 14px; font-size: 14px; line-height: 1.65; margin-top: 4px; border: 1px solid #EEEDE8; }
+  .notes-label { font-size: 13px; color: #888; margin: 12px 0 6px; }
+  .review-img { width: 100%; border-radius: 10px; border: 1px solid #E8E8E3; margin-top: 4px; }
+  .pdf-viewer { width: 100%; height: 520px; border-radius: 10px; border: 1px solid #E8E8E3; margin-top: 4px; }
+  .open-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; background: #F59E0B; color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-size: 14px; cursor: pointer; text-decoration: none; }
+  .open-link:hover { background: #D97706; }
+  .delete-btn { background: none; border: 1px solid #E8E8E3; border-radius: 8px; padding: 6px 12px; font-size: 13px; color: #888; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+  .delete-btn:hover { border-color: #EF4444; color: #EF4444; }
+  .confirm-box { background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 14px 16px; margin-top: 14px; }
+  .confirm-box p { font-size: 14px; color: #991B1B; margin-bottom: 10px; }
+  .confirm-btns { display: flex; gap: 8px; }
+  .confirm-del { background: #EF4444; color: #fff; border: none; border-radius: 6px; padding: 6px 14px; font-size: 13px; cursor: pointer; }
+  .confirm-cancel { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #555; }
+  .divider { border: none; border-top: 1px solid #EEEDE8; margin: 14px 0; }
+  .no-file { font-size: 13px; color: #bbb; margin-top: 4px; }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.38); display: flex; align-items: flex-end; justify-content: center; z-index: 100; }
+  .modal { background: #fff; border-radius: 16px 16px 0 0; width: 100%; max-width: 620px; padding: 22px 20px 36px; max-height: 92vh; overflow-y: auto; }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .modal-head h2 { font-size: 16px; font-weight: 600; }
+  .close-btn { background: none; border: none; cursor: pointer; color: #aaa; font-size: 22px; line-height: 1; padding: 0; }
+  .close-btn:hover { color: #555; }
+  .field-group { margin-bottom: 16px; }
+  label { display: block; font-size: 13px; font-weight: 500; color: #666; margin-bottom: 6px; }
+  input[type="date"], input[type="text"] { width: 100%; height: 42px; border-radius: 8px; border: 1px solid #ddd; padding: 0 12px; font-size: 15px; color: #1a1a1a; outline: none; background: #fff; }
+  input[type="date"]:focus, input[type="text"]:focus { border-color: #F59E0B; }
+  textarea { width: 100%; border-radius: 8px; border: 1px solid #ddd; padding: 10px 12px; font-size: 15px; color: #1a1a1a; outline: none; resize: vertical; min-height: 90px; background: #fff; }
+  textarea:focus { border-color: #F59E0B; }
+  .sort-row { display: flex; gap: 6px; margin-bottom: 12px; }
+  .sort-btn { flex: 1; padding: 6px 8px; border-radius: 8px; border: 1px solid #ddd; background: #fff; font-size: 12px; color: #888; cursor: pointer; text-align: center; }
+  .sort-btn.active { background: #FFFBEB; border-color: #F59E0B; color: #B45309; font-weight: 500; }
+  .no-review-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; margin-bottom: 16px; cursor: pointer; }
+  .no-review-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: #F59E0B; cursor: pointer; flex-shrink: 0; }
+  .no-review-row label { font-size: 14px; color: #92400E; font-weight: 500; cursor: pointer; margin: 0; }
+  .no-review-tag { background: #FEF3C7; color: #92400E; border-radius: 6px; padding: 1px 7px; font-size: 11px; font-weight: 500; margin-left: 6px; }
+  .upload-area { width: 100%; border: 2px dashed #F59E0B; border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; color: #B45309; font-size: 14px; background: #FFFBEB; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .upload-area:hover { background: #FEF3C7; }
+  .upload-area svg { width: 28px; height: 28px; }
+  .file-preview { background: #F9F9F6; border: 1px solid #ddd; border-radius: 8px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; position: relative; }
+  .file-preview-name { font-size: 14px; color: #444; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-preview-remove { background: rgba(0,0,0,0.12); border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; color: #555; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .img-preview { width: 100%; border-radius: 8px; border: 1px solid #ddd; display: block; margin-top: 8px; }
+  .save-btn { width: 100%; background: #F59E0B; color: #fff; border: none; border-radius: 9px; height: 46px; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 8px; }
+  .save-btn:hover { background: #D97706; }
+  .save-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .progress-bar-wrap { width: 100%; background: #F0EDE8; border-radius: 8px; height: 8px; margin-top: 10px; overflow: hidden; }
+  .progress-bar { height: 100%; background: #F59E0B; border-radius: 8px; transition: width 0.3s; }
+  .progress-label { font-size: 13px; color: #888; text-align: center; margin-top: 6px; }
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #E8E8E3; border-top-color: #F59E0B; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-wrap { text-align: center; padding: 48px; color: #bbb; display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 14px; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 14px; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div id="logo"><img src="data:image/png;base64,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" alt="KAH" /></div>
+  <div id="header-text">
+    <h1>Center Visit Reviews</h1>
+    <p>Kids After Hours — Admin Tool</p>
+  </div>
+</div>
+
+<div id="app">
+  <div class="loading-wrap"><div class="spinner"></div>Connecting…</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="file-input" accept="image/*,.pdf" multiple style="display:none" />
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const { createClient } = supabase;
+const sb = createClient(
+  'https://tjvzvwbtmilknguywdse.supabase.co',
+  'sb_publishable_6gAsF5-FGs3SiEx-V2WL6Q_nenqNO5q'
+);
+
+const CENTERS = [
+  { id: "barnsley", name: "Barnsley Elementary" },
+  { id: "bayard-rustin", name: "Bayard Rustin Elementary" },
+  { id: "burtonsville", name: "Burtonsville Elementary" },
+  { id: "cannon-road", name: "Cannon Road Elementary" },
+  { id: "carderock-springs", name: "Carderock Springs Elementary" },
+  { id: "cloverly", name: "Cloverly Elementary" },
+  { id: "fairland", name: "Fairland Elementary" },
+  { id: "farmland", name: "Farmland Elementary" },
+  { id: "flora-singer", name: "Flora Singer Elementary" },
+  { id: "flower-valley", name: "Flower Valley Elementary" },
+  { id: "forest-knolls", name: "Forest Knolls Elementary" },
+  { id: "freedom", name: "Freedom Elementary" },
+  { id: "garrett-park", name: "Garrett Park Elementary" },
+  { id: "glenallan", name: "Glenallan Elementary" },
+  { id: "glen-haven", name: "Glen Haven Elementary" },
+  { id: "greencastle", name: "Greencastle Elementary" },
+  { id: "highland-view", name: "Highland View Elementary" },
+  { id: "meadow-hall", name: "Meadow Hall Elementary" },
+  { id: "north-chevy-chase", name: "North Chevy Chase Elementary" },
+  { id: "oakland-terrace", name: "Oakland Terrace Elementary" },
+  { id: "page", name: "Page Elementary" },
+  { id: "red-barn-ranch", name: "Red Barn Ranch" },
+  { id: "rock-view", name: "Rock View Elementary" },
+  { id: "rosemary-hills", name: "Rosemary Hills Elementary" },
+  { id: "sargent-shriver", name: "Sargent Shriver Elementary" },
+  { id: "taneytown", name: "Taneytown Elementary" },
+  { id: "westbrook", name: "Westbrook Elementary" },
+  { id: "westover", name: "Westover Elementary" },
+  { id: "woodlin", name: "Woodlin Elementary" },
+];
+
+let state = {
+  view: "list",
+  selectedCenter: null,
+  reviews: [],
+  reviewsLoading: false,
+  activeReview: null,
+  centerCounts: {},
+  centerLastVisit: {},
+  centerLastReview: {},
+  thisMonthVisit: {},
+  thisMonthReview: {},
+  search: "",
+  sort: "alpha",
+  showModal: false,
+  formDate: todayStr(),
+  formReviewer: "",
+  formNotes: "",
+  formFile: null,
+  formFileName: "",
+  formFileType: null,
+  formPreviewUrl: null,
+  formFiles: [],
+  saving: false,
+  uploadProgress: 0,
+  deleteConfirm: false,
+};
+
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+function formatDate(s) {
+  if (!s) return "";
+  const d = new Date(s + "T00:00:00");
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+function initials(name) { return name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase(); }
+function escHtml(str) {
+  if (!str) return "";
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+// ── Supabase ───────────────────────────────────────────────────────────
+async function fetchCenterMeta() {
+  const { data, error } = await sb.from("visit_reviews").select("center_id, date, no_review").order("date", { ascending: false });
+  if (error) { console.error(error); return; }
+  const counts = {}, lastVisit = {}, lastReview = {}, thisMonthVisit = {}, thisMonthReview = {};
+
+  // Current month window: 1st of this month to today
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+  const today = now.toISOString().slice(0, 10);
+
+  CENTERS.forEach(c => { 
+    counts[c.id] = 0; lastVisit[c.id] = null; lastReview[c.id] = null;
+    thisMonthVisit[c.id] = false; thisMonthReview[c.id] = false;
+  });
+  (data || []).forEach(r => {
+    counts[r.center_id] = (counts[r.center_id] || 0) + 1;
+    if (r.no_review && !lastVisit[r.center_id]) lastVisit[r.center_id] = r.date;
+    if (!r.no_review && !lastReview[r.center_id]) lastReview[r.center_id] = r.date;
+    if (r.date >= monthStart && r.date <= today) {
+      if (r.no_review) thisMonthVisit[r.center_id] = true;
+      else thisMonthReview[r.center_id] = true;
+    }
+  });
+  state.centerCounts = counts;
+  state.centerLastVisit = lastVisit;
+  state.centerLastReview = lastReview;
+  state.thisMonthVisit = thisMonthVisit;
+  state.thisMonthReview = thisMonthReview;
+}
+
+async function fetchReviewsForCenter(centerId) {
+  const { data, error } = await sb.from("visit_reviews").select("*").eq("center_id", centerId).order("date", { ascending: false });
+  if (error) { console.error(error); return []; }
+  return (data || []).map(r => ({
+    id: r.id, centerId: r.center_id, date: r.date,
+    reviewer: r.reviewer, notes: r.notes || "",
+    hasFile: r.has_image, fileType: r.file_type,
+    fileUrl: r.file_url, noReview: r.no_review || false, createdAt: r.created_at,
+  }));
+}
+
+async function uploadFile(reviewId, file) {
+  const ext = file.type === "application/pdf" ? "pdf" : "jpg";
+  const path = `${reviewId}.${ext}`;
+  const { error } = await sb.storage.from("review-files").upload(path, file, { contentType: file.type, upsert: true });
+  if (error) throw error;
+  const { data } = sb.storage.from("review-files").getPublicUrl(path);
+  return data.publicUrl;
+}
+
+async function insertReview(review, fileUrl) {
+  const { error } = await sb.from("visit_reviews").insert({
+    id: review.id, center_id: review.centerId, date: review.date,
+    reviewer: review.reviewer, notes: review.notes || null,
+    has_image: review.hasFile, file_type: review.fileType,
+    file_url: fileUrl || null, no_review: review.noReview || false, created_at: review.createdAt,
+  });
+  if (error) throw error;
+}
+
+async function removeReview(reviewId, fileType) {
+  if (fileType) {
+    try {
+      const ext = fileType === "pdf" ? "pdf" : "jpg";
+      await sb.storage.from("review-files").remove([`${reviewId}-0.${ext}`, `${reviewId}.${ext}`]);
+    } catch (e) { console.warn("Storage cleanup failed (non-critical):", e); }
+  }
+  const { error } = await sb.from("visit_reviews").delete().eq("id", reviewId);
+  if (error) throw error;
+}
+
+// ── Render ─────────────────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById("app");
+  if (state.view === "list") app.innerHTML = renderList();
+  else if (state.view === "center") app.innerHTML = renderCenter();
+  else if (state.view === "review") app.innerHTML = renderReview();
+  if (state.showModal) { app.innerHTML += renderModal(); bindModal(); }
+  bindSearchInput();
+}
+
+function bindSearchInput() {
+  const si = document.getElementById("search-input");
+  if (si) si.addEventListener("input", e => { state.search = e.target.value; render(); });
+}
+
+function renderList() {
+  let filtered = CENTERS.filter(c => c.name.toLowerCase().includes(state.search.toLowerCase()));
+  if (state.sort === "alpha") {
+    filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+  } else if (state.sort === "oldest-visit") {
+    filtered = [...filtered].sort((a, b) => {
+      if (!state.centerLastVisit[a.id] && !state.centerLastVisit[b.id]) return a.name.localeCompare(b.name);
+      if (!state.centerLastVisit[a.id]) return -1;
+      if (!state.centerLastVisit[b.id]) return 1;
+      return state.centerLastVisit[a.id] < state.centerLastVisit[b.id] ? -1 : 1;
+    });
+  } else if (state.sort === "oldest-review") {
+    filtered = [...filtered].sort((a, b) => {
+      if (!state.centerLastReview[a.id] && !state.centerLastReview[b.id]) return a.name.localeCompare(b.name);
+      if (!state.centerLastReview[a.id]) return -1;
+      if (!state.centerLastReview[b.id]) return 1;
+      return state.centerLastReview[a.id] < state.centerLastReview[b.id] ? -1 : 1;
+    });
+  }
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  const cutoff = oneMonthAgo.toISOString().slice(0, 10);
+
+  const items = filtered.map(c => {
+    const count = state.centerCounts[c.id] || 0;
+    const lastV = state.centerLastVisit[c.id];
+    const lastR = state.centerLastReview[c.id];
+    const visitOverdue = !lastV || lastV < cutoff;
+    const reviewOverdue = !lastR || lastR < cutoff;
+    // Name turns red if BOTH visit and review are overdue (or never done)
+    const nameRed = visitOverdue && reviewOverdue;
+    const visitColor = visitOverdue ? "#EF4444" : "#888";
+    const reviewColor = reviewOverdue ? "#EF4444" : "#888";
+    const check = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
+    const empty = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>`;
+    const visitCheck = state.thisMonthVisit[c.id] ? check : empty;
+    const reviewCheck = state.thisMonthReview[c.id] ? check : empty;
+    return `<div class="card" data-action="open-center" data-id="${c.id}">
+      <div class="avatar">${initials(c.name)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="card-name" style="color:${nameRed ? '#EF4444' : 'inherit'}">${c.name}</div>
+        <div class="card-dates">
+          <div class="card-date-row">Last visited: <span style="color:${visitColor};font-weight:${visitOverdue ? '600' : '500'}">${lastV ? formatDate(lastV) : "Never"}</span></div>
+          <div class="card-date-row">Last reviewed: <span style="color:${reviewColor};font-weight:${reviewOverdue ? '600' : '500'}">${lastR ? formatDate(lastR) : "Never"}</span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px;margin-right:8px;flex-shrink:0">
+        <div style="display:flex;align-items:center;gap:3px;font-size:11px;color:#666;white-space:nowrap">${visitCheck} Visited</div>
+        <div style="display:flex;align-items:center;gap:3px;font-size:11px;color:#666;white-space:nowrap">${reviewCheck} Reviewed</div>
+      </div>
+      <span class="badge">${count} visit${count !== 1 ? "s" : ""}</span>
+      <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`;
+  }).join("");
+  return `
+    <div class="search-wrap">
+      <input id="search-input" type="text" placeholder="Search centers…" value="${escHtml(state.search)}" />
+    </div>
+    <div class="sort-row">
+      <button class="sort-btn ${state.sort === 'alpha' ? 'active' : ''}" data-action="set-sort" data-sort="alpha">A–Z</button>
+      <button class="sort-btn ${state.sort === 'oldest-visit' ? 'active' : ''}" data-action="set-sort" data-sort="oldest-visit">Oldest visited first</button>
+      <button class="sort-btn ${state.sort === 'oldest-review' ? 'active' : ''}" data-action="set-sort" data-sort="oldest-review">Oldest reviewed first</button>
+    </div>
+    <span class="count-label">${filtered.length} center${filtered.length !== 1 ? "s" : ""}</span>
+    ${items || '<div class="empty"><p>No centers found.</p></div>'}`;
+}
+
+function renderCenter() {
+  const c = state.selectedCenter;
+  let revHtml = "";
+  if (state.reviewsLoading) {
+    revHtml = `<div class="loading-wrap"><div class="spinner"></div>Loading reviews…</div>`;
+  } else if (state.reviews.length === 0) {
+    revHtml = `<div class="empty"><div class="emoji">📋</div><p>No visit reviews yet.</p><small>Tap "Add Review" after a center visit.</small></div>`;
+  } else {
+    revHtml = state.reviews.map(r => {
+      const icon = r.noReview ? "👣" : r.fileType === "pdf" ? "📄" : r.hasFile ? "📷" : "";
+      const tag = r.noReview ? `<span class="no-review-tag">visit only</span>` : "";
+      return `<div class="rev-card" data-action="open-review" data-id="${r.id}">
+        <div class="rev-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div class="rev-date">${formatDate(r.date)}${tag}</div>
+          <div class="rev-meta">${r.noReview ? "Visited by" : "Reviewed by"} ${escHtml(r.reviewer)}${icon ? " &nbsp;" + icon : ""}</div>
+          ${r.notes ? `<div class="rev-notes-preview">${escHtml(r.notes)}</div>` : ""}
+        </div>
+        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>`;
+    }).join("");
+  }
+  return `
+    <button class="back-btn" data-action="go-list">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      All Centers
+    </button>
+    <div class="section-head">
+      <div>
+        <div class="section-title">${escHtml(c.name)}</div>
+        <div class="section-sub">${state.reviews.length} visit review${state.reviews.length !== 1 ? "s" : ""}</div>
+      </div>
+      <button class="add-btn" data-action="open-modal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Review
+      </button>
+    </div>
+    ${revHtml}`;
+}
+
+function renderReview() {
+  const r = state.activeReview;
+  let fileHtml = "";
+  if (r.hasFile && r.fileUrl) {
+    const urls = r.fileUrl.split(",");
+    fileHtml = urls.map((url, i) => {
+      const isPdf = url.includes(".pdf") || r.fileType === "pdf";
+      return isPdf
+        ? `<embed src="${escHtml(url)}" type="application/pdf" class="pdf-viewer" style="margin-bottom:8px" />
+           <a class="open-link" href="${escHtml(url)}" target="_blank" style="margin-bottom:12px">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+             Open PDF ${urls.length > 1 ? (i+1) : ""}
+           </a>`
+        : `<img class="review-img" src="${escHtml(url)}" alt="Review form ${i+1}" style="margin-bottom:8px" />`;
+    }).join("");
+  } else if (r.hasFile) {
+    fileHtml = `<div style="font-size:13px;color:#bbb;margin-top:4px">File unavailable</div>`;
+  }
+
+  const confirmHtml = state.deleteConfirm ? `
+    <div class="confirm-box">
+      <p>Delete this visit review? This cannot be undone.</p>
+      <div class="confirm-btns">
+        <button class="confirm-del" data-action="confirm-delete">Delete</button>
+        <button class="confirm-cancel" data-action="cancel-delete">Cancel</button>
+      </div>
+    </div>` : "";
+
+  return `
+    <button class="back-btn" data-action="go-center">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      ${escHtml(state.selectedCenter.name)}
+    </button>
+    <div class="detail-card">
+      <div class="detail-head">
+        <h2>Visit Review</h2>
+        <button class="delete-btn" data-action="start-delete">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          Delete
+        </button>
+      </div>
+      <div class="detail-row"><span class="detail-label">Date</span><span class="detail-val">${formatDate(r.date)}</span></div>
+      <div class="detail-row"><span class="detail-label">${r.noReview ? "Visited by" : "Reviewer"}</span><span class="detail-val">${escHtml(r.reviewer)}${r.noReview ? ' <span class="no-review-tag">visit only</span>' : ""}</span></div>
+      ${r.notes ? `<div class="notes-label">Notes</div><div class="notes-box">${escHtml(r.notes)}</div>` : ""}
+      ${confirmHtml}
+      <hr class="divider">
+      ${r.noReview 
+        ? `<div class="no-file" style="color:#B45309;font-size:13px">This was logged as a center visit with no official review.</div>` 
+        : `<div class="notes-label">Uploaded Review Form</div>
+           ${r.hasFile ? fileHtml : `<div class="no-file">No file uploaded for this review.</div>`}`}
+    </div>`;
+}
+
+function renderModal() {
+  const c = state.selectedCenter;
+  let uploadHtml = "";
+  if (state.formFiles.length > 0) {
+    const fileList = state.formFiles.map((f, i) => `
+      <div class="file-preview" style="margin-bottom:6px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="file-preview-name">${escHtml(f.name)}</span>
+        <button class="file-preview-remove" data-action="remove-file" data-index="${i}">&#x2715;</button>
+      </div>
+      ${f.previewUrl ? `<img class="img-preview" src="${f.previewUrl}" alt="Preview" style="margin-bottom:6px" />` : ""}`
+    ).join("");
+    uploadHtml = `
+      ${fileList}
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <div class="upload-area" data-action="trigger-upload" style="padding:12px;flex:1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:18px;height:18px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span style="font-size:13px">Add more files</span>
+        </div>
+      </div>`;
+  } else {
+    uploadHtml = `
+      <div style="display:flex;gap:8px">
+        <div class="upload-area" data-action="trigger-upload" style="flex:1;padding:16px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>Upload files</span>
+          <span style="font-size:11px;color:#aaa">JPG, PNG, PDF — tap &amp; hold to select multiple</span>
+        </div>
+      </div>`;
+  }
+
+  const canSave = state.formDate && state.formReviewer.trim();
+  const progressHtml = state.saving && state.uploadProgress > 0 ? `
+    <div class="progress-bar-wrap"><div class="progress-bar" style="width:${state.uploadProgress}%"></div></div>
+    <div class="progress-label">${state.uploadProgress < 100 ? "Uploading… " + state.uploadProgress + "%" : "Saving…"}</div>` : "";
+
+  const reviewFields = `
+    <div class="field-group"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any additional notes or observations…">${escHtml(state.formNotes)}</textarea></div>
+    ${!state.formNoReview ? `<div class="field-group"><label>Upload Review Form (optional)</label>${uploadHtml}</div>` : ""}`;
+
+  return `
+    <div class="overlay" id="modal-overlay">
+      <div class="modal">
+        <div class="modal-head">
+          <h2>Log Visit — ${escHtml(c.name)}</h2>
+          <button class="close-btn" data-action="close-modal">&#x2715;</button>
+        </div>
+        <div class="field-group"><label>Visit Date *</label><input type="date" id="f-date" value="${state.formDate}" /></div>
+        <div class="field-group"><label>Your Name *</label>
+          <select id="f-reviewer" style="width:100%;height:42px;border-radius:8px;border:1px solid #ddd;padding:0 12px;font-size:15px;color:#1a1a1a;outline:none;background:#fff;appearance:auto;">
+            <option value="">— Select your name —</option>
+            <option value="Bret" ${state.formReviewer === "Bret" ? "selected" : ""}>Bret</option>
+            <option value="Paul" ${state.formReviewer === "Paul" ? "selected" : ""}>Paul</option>
+            <option value="John" ${state.formReviewer === "John" ? "selected" : ""}>John</option>
+            <option value="Bob" ${state.formReviewer === "Bob" ? "selected" : ""}>Bob</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Type *</label>
+          <div style="display:flex;gap:8px">
+            <button type="button" data-action="set-type-review" style="flex:1;height:42px;border-radius:8px;border:2px solid ${!state.formNoReview ? '#F59E0B' : '#ddd'};background:${!state.formNoReview ? '#FFFBEB' : '#fff'};color:${!state.formNoReview ? '#B45309' : '#888'};font-size:15px;font-weight:${!state.formNoReview ? '600' : '400'};cursor:pointer;">Review</button>
+            <button type="button" data-action="set-type-visit" style="flex:1;height:42px;border-radius:8px;border:2px solid ${state.formNoReview ? '#F59E0B' : '#ddd'};background:${state.formNoReview ? '#FFFBEB' : '#fff'};color:${state.formNoReview ? '#B45309' : '#888'};font-size:15px;font-weight:${state.formNoReview ? '600' : '400'};cursor:pointer;">Visit</button>
+          </div>
+        </div>
+        ${reviewFields}
+        ${progressHtml}
+        <button class="save-btn" data-action="save-review" ${!canSave || state.saving ? "disabled" : ""}>${state.saving ? "Saving…" : "Save"}</button>
+      </div>
+    </div>`;
+}
+
+// ── Events ─────────────────────────────────────────────────────────────
+function bindModal() {
+  const overlay = document.getElementById("modal-overlay");
+  if (overlay) overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
+  const fd = document.getElementById("f-date");
+  const fr = document.getElementById("f-reviewer");
+  const fn = document.getElementById("f-notes");
+  if (fd) fd.addEventListener("change", e => { state.formDate = e.target.value; });
+  if (fr) fr.addEventListener("change", e => { state.formReviewer = e.target.value; render(); });
+  if (fn) fn.addEventListener("input", e => { state.formNotes = e.target.value; });
+}
+function handleClick(e) {
+  const el = e.target.closest("[data-action]");
+  if (!el) return;
+  const action = el.dataset.action;
+  if (action === "open-center") { const c = CENTERS.find(c => c.id === el.dataset.id); if (c) openCenter(c); }
+  else if (action === "go-list") { state.view = "list"; state.selectedCenter = null; state.reviews = []; render(); }
+  else if (action === "go-center") { state.view = "center"; state.activeReview = null; state.deleteConfirm = false; render(); }
+  else if (action === "open-review") { const r = state.reviews.find(r => r.id === el.dataset.id); if (r) openReview(r); }
+  else if (action === "open-modal") { state.showModal = true; render(); }
+  else if (action === "close-modal") { closeModal(); }
+  else if (action === "trigger-upload") { document.getElementById("file-input").click(); }
+  else if (action === "set-sort") { state.sort = el.dataset.sort; render(); }
+  else if (action === "set-type-review") { 
+    const fn = document.getElementById("f-notes");
+    if (fn) state.formNotes = fn.value;
+    state.formNoReview = false; 
+    state.showModal = true;
+    render(); 
+  }
+  else if (action === "set-type-visit") { 
+    const fn = document.getElementById("f-notes");
+    if (fn) state.formNotes = fn.value;
+    state.formNoReview = true; 
+    state.showModal = true;
+    render(); 
+  }
+  else if (action === "remove-file") { 
+    const idx = parseInt(el.dataset.index);
+    state.formFiles = state.formFiles.filter((_, i) => i !== idx);
+    render(); 
+  }
+  else if (action === "save-review") { saveReview(); }
+  else if (action === "start-delete") { state.deleteConfirm = true; render(); }
+  else if (action === "confirm-delete") { doDelete(); }
+  else if (action === "cancel-delete") { state.deleteConfirm = false; render(); }
+}
+
+function closeModal() {
+  state.showModal = false; state.formDate = todayStr();
+  state.formReviewer = ""; state.formNotes = "";
+  state.formFile = null; state.formFileName = ""; state.formFileType = null; state.formPreviewUrl = null;
+  state.formFiles = []; state.formNoReview = false; state.saving = false; state.uploadProgress = 0;
+  render();
+}
+
+async function openCenter(center) {
+  state.selectedCenter = center; state.view = "center";
+  state.reviewsLoading = true; state.reviews = [];
+  render();
+  state.reviews = await fetchReviewsForCenter(center.id);
+  state.reviewsLoading = false;
+  render();
+}
+
+function openReview(rev) {
+  state.activeReview = rev; state.deleteConfirm = false;
+  state.view = "review";
+  render();
+}
+
+async function saveReview() {
+  const fd = document.getElementById("f-date");
+  const fr = document.getElementById("f-reviewer");
+  const fn = document.getElementById("f-notes");
+  if (fd) state.formDate = fd.value;
+  if (fr) state.formReviewer = fr.value;
+  if (fn) state.formNotes = fn.value;
+  if (!state.formDate || !state.formReviewer.trim()) return;
+
+  state.saving = true; state.uploadProgress = 0; render();
+
+  const reviewId = state.selectedCenter.id + "-" + Date.now();
+  const review = {
+    id: reviewId, centerId: state.selectedCenter.id,
+    date: state.formDate, reviewer: state.formReviewer.trim(),
+    notes: state.formNotes.trim(), hasFile: state.formFiles.length > 0 && !state.formNoReview,
+    fileType: state.formNoReview ? null : (state.formFiles.length > 0 ? state.formFiles[0].fileType : null),
+    noReview: state.formNoReview, createdAt: new Date().toISOString(),
+  };
+
+  try {
+    let fileUrls = [];
+    if (state.formFiles.length > 0 && !state.formNoReview) {
+      for (let i = 0; i < state.formFiles.length; i++) {
+        state.uploadProgress = Math.round(20 + (60 * i / state.formFiles.length)); render();
+        const url = await uploadFile(reviewId + "-" + i, state.formFiles[i].file);
+        fileUrls.push(url);
+      }
+      state.uploadProgress = 85; render();
+    }
+    const fileUrl = fileUrls.length > 0 ? fileUrls.join(",") : null;
+    await insertReview(review, fileUrl);
+    state.uploadProgress = 100;
+    review.fileUrl = fileUrl;
+    state.centerCounts[state.selectedCenter.id] = (state.centerCounts[state.selectedCenter.id] || 0) + 1;
+    if (review.noReview) {
+      if (!state.centerLastVisit[state.selectedCenter.id] || review.date >= state.centerLastVisit[state.selectedCenter.id]) {
+        state.centerLastVisit[state.selectedCenter.id] = review.date;
+      }
+      const now = new Date(); const ms = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
+      if (review.date >= ms) state.thisMonthVisit[state.selectedCenter.id] = true;
+    } else {
+      if (!state.centerLastReview[state.selectedCenter.id] || review.date >= state.centerLastReview[state.selectedCenter.id]) {
+        state.centerLastReview[state.selectedCenter.id] = review.date;
+      }
+      const now = new Date(); const ms = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
+      if (review.date >= ms) state.thisMonthReview[state.selectedCenter.id] = true;
+    }
+    state.reviews = [review, ...state.reviews];
+    state.saving = false;
+    closeModal();
+    showToast("Review saved!");
+  } catch (err) {
+    state.saving = false; state.uploadProgress = 0; render();
+    showToast("Error saving — " + (err.message || "check console"));
+    console.error(err);
+  }
+}
+
+async function doDelete() {
+  const r = state.activeReview;
+  try {
+    await removeReview(r.id, r.fileType);
+    state.centerCounts[state.selectedCenter.id] = Math.max(0, (state.centerCounts[state.selectedCenter.id] || 1) - 1);
+    state.reviews = state.reviews.filter(x => x.id !== r.id);
+    const lastRev = state.reviews.find(x => !x.noReview);
+    const lastVis = state.reviews.find(x => x.noReview);
+    state.centerLastReview[state.selectedCenter.id] = lastRev ? lastRev.date : null;
+    state.centerLastVisit[state.selectedCenter.id] = lastVis ? lastVis.date : null;
+    state.view = "center"; state.activeReview = null; state.deleteConfirm = false;
+    render(); showToast("Review deleted.");
+  } catch (err) {
+    showToast("Error deleting — " + (err.message || "check console"));
+    console.error(err);
+  }
+}
+
+
+// ── File input ─────────────────────────────────────────────────────────
+document.getElementById("file-input").addEventListener("change", function(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  let loaded = 0;
+  files.forEach(file => {
+    const entry = { file, name: file.name, fileType: file.type === "application/pdf" ? "pdf" : "image", previewUrl: null };
+    if (entry.fileType === "image") {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        entry.previewUrl = ev.target.result;
+        loaded++;
+        if (loaded === files.length) render();
+      };
+      reader.readAsDataURL(file);
+    } else {
+      loaded++;
+      if (loaded === files.length) render();
+    }
+    state.formFiles.push(entry);
+  });
+  this.value = "";
+});
+
+// ── Init ───────────────────────────────────────────────────────────────
+document.getElementById("app").addEventListener("click", handleClick);
+(async () => { await fetchCenterMeta(); render(); })();
+</script>
+</body>
+</html>
