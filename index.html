@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>KAH Fleet Tracker v2</title>
+<title>KAH Fleet Tracker v4</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -28,8 +28,8 @@ button, input, select, textarea { font-family: 'Nunito', sans-serif; }
 .ok { background:#2ecc71; }
 input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
 .wrench-anim { animation: wrenchPulse 1.5s ease-in-out infinite; display: inline-block; }
-.needs-service-btn { transition: all 0.2s ease; }
-.needs-service-btn:hover { transform: scale(1.05); }
+.toggle-btn { transition: all 0.2s ease; }
+.toggle-btn:hover { transform: scale(1.05); }
 </style>
 </head>
 <body>
@@ -49,7 +49,8 @@ const CENTERS = [
   "KAH @ North Chevy Chase Elementary","KAH @ Oakland Terrace Elementary","KAH @ Page Elementary",
   "KAH @ Red Barn Ranch","KAH @ Rock View Elementary","KAH @ Rosemary Hills Elementary",
   "KAH @ Sargent Shriver Elementary","KAH @ Taneytown Elementary","KAH @ Westbrook Elementary",
-  "KAH @ Westover Elementary","KAH @ Woodlin Elementary","Main Office / Garage","In Transit","Butler's Auto Service","Kemp Mill Swim Club","AUTO Truck and RV","Other"
+  "KAH @ Westover Elementary","KAH @ Woodlin Elementary","Main Office / Garage","In Transit",
+  "Butler's Auto Service","Kemp Mill Swim Club","AUTO Truck and RV","Other"
 ];
 
 const BUS_NAMES = [
@@ -95,6 +96,7 @@ function App() {
   const [search, setSearch] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
+  const [togglingBatteryId, setTogglingBatteryId] = useState(null);
 
   const showToast = (msg, type="success") => { setToast({msg,type}); setTimeout(()=>setToast(null),3500); };
 
@@ -135,6 +137,19 @@ function App() {
       showToast(newVal ? `${bus.bus_name} flagged for service!` : `${bus.bus_name} cleared.`, newVal ? "warning" : "success");
     } catch(e) { showToast("Update failed: " + e.message, "error"); }
     setTogglingId(null);
+  }
+
+  async function toggleBattery(e, bus) {
+    e.stopPropagation();
+    setTogglingBatteryId(bus.id);
+    try {
+      const newVal = !bus.battery_kill_switch;
+      const { error } = await sb.from("buses").update({ battery_kill_switch: newVal, updated_at: new Date().toISOString() }).eq("id", bus.id);
+      if (error) throw error;
+      setBuses(prev => prev.map(b => b.id === bus.id ? {...b, battery_kill_switch: newVal} : b));
+      showToast(newVal ? `${bus.bus_name} battery kill switch ON.` : `${bus.bus_name} battery kill switch OFF.`, "warning");
+    } catch(e) { showToast("Update failed: " + e.message, "error"); }
+    setTogglingBatteryId(null);
   }
 
   async function handleSave() {
@@ -222,10 +237,21 @@ function App() {
     const active = bus.needs_service;
     const toggling = togglingId === bus.id;
     return (
-      <button className="needs-service-btn" onClick={(e)=>toggleNeedsService(e,bus)} disabled={toggling}
-        style={{ marginTop:12, width:"100%", padding:"8px 0", borderRadius:9, border:active?"2px solid #e74c3c":"2px solid #e74c3c55", background:active?"rgba(231,76,60,0.18)":"transparent", color:active?"#ff6b6b":"#8a6a6a", fontSize:12, fontWeight:800, cursor:toggling?"wait":"pointer", letterSpacing:0.5, display:"flex", alignItems:"center", justifyContent:"center", gap:6, opacity:toggling?0.6:1 }}>
+      <button className="toggle-btn" onClick={(e)=>toggleNeedsService(e,bus)} disabled={toggling}
+        style={{ marginTop:8, width:"100%", padding:"8px 0", borderRadius:9, border:active?"2px solid #e74c3c":"2px solid #e74c3c55", background:active?"rgba(231,76,60,0.18)":"transparent", color:active?"#ff6b6b":"#8a6a6a", fontSize:12, fontWeight:800, cursor:toggling?"wait":"pointer", letterSpacing:0.5, display:"flex", alignItems:"center", justifyContent:"center", gap:6, opacity:toggling?0.6:1 }}>
         <span style={active?{display:"inline-block",animation:"wrenchPulse 1.5s ease-in-out infinite"}:{}}>🔧</span>
         {toggling?"Updating…":active?"NEEDS SERVICE ✓":"NEEDS SERVICE"}
+      </button>
+    );
+  }
+
+  function BatteryBtn({ bus }) {
+    const active = bus.battery_kill_switch;
+    const toggling = togglingBatteryId === bus.id;
+    return (
+      <button className="toggle-btn" onClick={(e)=>toggleBattery(e,bus)} disabled={toggling}
+        style={{ marginTop:8, width:"100%", padding:"8px 0", borderRadius:9, border:active?"2px solid #aacc00":"2px solid #aacc0044", background:active?"rgba(170,204,0,0.15)":"transparent", color:active?"#aacc00":"#6a7a4a", fontSize:12, fontWeight:800, cursor:toggling?"wait":"pointer", letterSpacing:0.5, display:"flex", alignItems:"center", justifyContent:"center", gap:6, opacity:toggling?0.6:1 }}>
+        🔋 {toggling?"Updating…":active?"BATTERY KILL SWITCH ✓":"BATTERY KILL SWITCH"}
       </button>
     );
   }
@@ -307,6 +333,7 @@ function App() {
                 {bus.mileage && <div style={S.cardRow}><span style={S.cardIcon}>📊</span>{parseInt(bus.mileage).toLocaleString()} miles</div>}
                 {bus.notes && <div style={{...S.cardRow,marginTop:8,padding:"8px 12px",background:"#0f1923",borderRadius:8,fontSize:12,color:"#8a9ab0",lineHeight:1.5}}>{bus.notes.length>80?bus.notes.slice(0,80)+"…":bus.notes}</div>}
                 <NeedsServiceBtn bus={bus} />
+                <BatteryBtn bus={bus} />
               </div>
             );
           })}
@@ -323,8 +350,13 @@ function App() {
               </div>
             </div>
             {modal.bus.needs_service && (
-              <div style={{background:"rgba(231,76,60,0.12)",border:"1px solid #e74c3c55",borderRadius:10,padding:"10px 16px",marginBottom:16,display:"flex",alignItems:"center",gap:10,color:"#ff6b6b",fontWeight:700,fontSize:13}}>
+              <div style={{background:"rgba(231,76,60,0.12)",border:"1px solid #e74c3c55",borderRadius:10,padding:"10px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:10,color:"#ff6b6b",fontWeight:700,fontSize:13}}>
                 <span className="wrench-anim">🔧</span> This vehicle has been flagged as needing service.
+              </div>
+            )}
+            {modal.bus.battery_kill_switch && (
+              <div style={{background:"rgba(170,204,0,0.1)",border:"1px solid #aacc0055",borderRadius:10,padding:"10px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:10,color:"#aacc00",fontWeight:700,fontSize:13}}>
+                🔋 Battery kill switch is active on this vehicle.
               </div>
             )}
             {[
@@ -398,7 +430,7 @@ function App() {
         </div>
       )}
 
-      {toast && <div style={{...S.toast,background:toast.type==="error"?"#c0392b":toast.type==="warning"?"#c0390b":"#27ae60"}}>{toast.type==="error"?"⚠️ ":toast.type==="warning"?"🔧 ":"✅ "}{toast.msg}</div>}
+      {toast && <div style={{...S.toast,background:toast.type==="error"?"#c0392b":toast.type==="warning"?"#c0390b":"#27ae60"}}>{toast.type==="error"?"⚠️ ":toast.type==="warning"?"🔋 ":"✅ "}{toast.msg}</div>}
     </div>
   );
 }
