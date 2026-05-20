@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>KAH Fleet Tracker v4</title>
+<title>KAH Fleet Tracker v5</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -57,6 +57,8 @@ const BUS_NAMES = [
   "Bus 21","Bus 22","Bus 23","Bus 24","Bus 25","Bus 26","Bus 27",
   "Shuttle 1","Shuttle 2","Red Van","Blue Van","Yellow Van","Green Van"
 ];
+
+const BATTERY_BUSES = ["Bus 21","Bus 25"];
 
 function serviceStatus(nextDate) {
   if (!nextDate) return "unknown";
@@ -333,7 +335,7 @@ function App() {
                 {bus.mileage && <div style={S.cardRow}><span style={S.cardIcon}>📊</span>{parseInt(bus.mileage).toLocaleString()} miles</div>}
                 {bus.notes && <div style={{...S.cardRow,marginTop:8,padding:"8px 12px",background:"#0f1923",borderRadius:8,fontSize:12,color:"#8a9ab0",lineHeight:1.5}}>{bus.notes.length>80?bus.notes.slice(0,80)+"…":bus.notes}</div>}
                 <NeedsServiceBtn bus={bus} />
-                <BatteryBtn bus={bus} />
+                {BATTERY_BUSES.includes(bus.bus_name) && <BatteryBtn bus={bus} />}
               </div>
             );
           })}
@@ -430,7 +432,7 @@ function App() {
         </div>
       )}
 
-      {toast && <div style={{...S.toast,background:toast.type==="error"?"#c0392b":toast.type==="warning"?"#c0390b":"#27ae60"}}>{toast.type==="error"?"⚠️ ":toast.type==="warning"?"🔋 ":"✅ "}{toast.msg}</div>}
+      {toast && <div style={{...S.toast,background:toast.type==="error"?"#c0392b":toast.type==="warning"?"#886600":"#27ae60"}}>{toast.type==="error"?"⚠️ ":toast.type==="warning"?"🔋 ":"✅ "}{toast.msg}</div>}
     </div>
   );
 }
