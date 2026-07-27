@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>KAH Fleet Tracker v5</title>
+<title>KAH Fleet Tracker v7</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -39,6 +39,22 @@ const { useState, useEffect } = React;
 const { createClient } = supabase;
 const sb = createClient("https://tjvzvwbtmilknguywdse.supabase.co", "sb_publishable_6gAsF5-FGs3SiEx-V2WL6Q_nenqNO5q");
 
+const VEHICLE_INFO = {
+  "Bus 21": { veh:"025", year:"2019", make:"International (72 Pass)", model:"CE", kah_id:"177221", tag:"1GS9780", vin:"4DRBUC8P2KB353519", value:"$84,985.00", fleet_id:"245003099", title:"61379912", emissions:"Exempt", tags_exp:"08/2026" },
+  "Bus 22": { veh:"026", year:"2017", make:"Freightliner (72 Pass)", model:"SB", kah_id:"177222", tag:"1GS9773", vin:"4UZABRDU0HCHS5655", value:"$65,985.00", fleet_id:"245003655", title:"61367811", emissions:"Exempt", tags_exp:"08/2026" },
+  "Bus 23": { veh:"027", year:"2017", make:"Freightliner (72 Pass)", model:"SB", kah_id:"177223", tag:"1GS9781", vin:"4UZABRDU2HCHS5656", value:"$65,985.00", fleet_id:"245003594", title:"61380106", emissions:"Exempt", tags_exp:"08/2026" },
+  "Bus 24": { veh:"028", year:"2017", make:"Blue Bird International (72 Pass)", model:"Vision", kah_id:"177224", tag:"2GT6096", vin:"1BAKGCPA5HF332023", value:"$73,700.00", fleet_id:"245003667", title:"61360512", emissions:"Exempt", tags_exp:"08/2026" },
+  "Bus 25": { veh:"029", year:"2015", make:"Blue Bird International (72 Pass)", model:"Vision", kah_id:"157225", tag:"2GT6097", vin:"1BAKGCPH0FF309467", value:"$51,700.00", fleet_id:"245003876", title:"61360514", emissions:"Exempt", tags_exp:"08/2026" },
+  "Bus 26": { veh:"030", year:"2015", make:"Blue Bird International (72 Pass)", model:"All American", kah_id:"157226", tag:"2GT6095", vin:"1BABJCPH0FF309471", value:"$51,700.00", fleet_id:"245003443", title:"61360513", emissions:"Exempt", tags_exp:"08/2026" },
+  "Bus 27": { veh:"033", year:"2019", make:"Blue Bird", model:"Vision", kah_id:"197127", tag:"4HB4682", vin:"1BAKGCSA8KF...", value:"$77,585.00", fleet_id:"—", title:"62590455", emissions:"Exempt", tags_exp:"05/2027" },
+  "Shuttle 1": { veh:"009", year:"2019", make:"Ford (34 Pass)", model:"F550", kah_id:"193402", tag:"10079P", vin:"1FDAF5GY2KED56866", value:"$88,000.00", fleet_id:"245003656", title:"57165006", emissions:"12/2027", tags_exp:"05/2029" },
+  "Shuttle 2": { veh:"010", year:"2019", make:"Ford (34 Pass)", model:"F550", kah_id:"193401", tag:"10078P", vin:"1FDAF5GY0KED56865", value:"$88,000.00", fleet_id:"245003737", title:"57164910", emissions:"5/27", tags_exp:"05/31/2029" },
+  "Van Red": { veh:"011", year:"2017", make:"Chevrolet (15 Pass)", model:"Express", kah_id:"171514", tag:"6DJ6183", vin:"1GAZGPFG4H1160638", value:"$35,000.00", fleet_id:"245003713", title:"505599788", emissions:"10/2027", tags_exp:"06/29" },
+  "Van Blue": { veh:"012", year:"2017", make:"Chevrolet (15 Pass)", model:"Express", kah_id:"171512", tag:"6DJ6191", vin:"1GAZGPFG6H1335326", value:"$35,000.00", fleet_id:"245003609", title:"50639294", emissions:"12/27", tags_exp:"07/31/2029" },
+  "Van Green": { veh:"003", year:"2014", make:"Chevrolet (15 Pass)", model:"Express", kah_id:"141513", tag:"4BY8042", vin:"1GAZG1FG4E1169607", value:"$32,000.00", fleet_id:"245003018", title:"46753279", emissions:"6/27", tags_exp:"Good, Needs sticker 5/14/26" },
+  "Van Yellow": { veh:"004", year:"2014", make:"Chevrolet (15 Pass)", model:"Express", kah_id:"141511", tag:"4BY8043", vin:"1GAZG1FG2E1205147", value:"$32,000.00", fleet_id:"—", title:"46753309", emissions:"5/27", tags_exp:"Good, Needs sticker 5/14/26" },
+};
+
 const CENTERS = [
   "KAH @ Barnsley Elementary","KAH @ Bayard Rustin Elementary","KAH @ Burtonsville Elementary",
   "KAH @ Cannon Road Elementary","KAH @ Carderock Springs Elementary","KAH @ Cloverly Elementary",
@@ -49,7 +65,7 @@ const CENTERS = [
   "KAH @ North Chevy Chase Elementary","KAH @ Oakland Terrace Elementary","KAH @ Page Elementary",
   "KAH @ Red Barn Ranch","KAH @ Rock View Elementary","KAH @ Rosemary Hills Elementary",
   "KAH @ Sargent Shriver Elementary","KAH @ Taneytown Elementary","KAH @ Westbrook Elementary",
-  "KAH @ Westover Elementary","KAH @ Woodlin Elementary","Main Office","In Transit",
+  "KAH @ Westover Elementary","KAH @ Woodlin Elementary","Main Office / Garage","In Transit",
   "Butler's Auto Service","Kemp Mill Swim Club","AUTO Truck and RV","Other"
 ];
 
@@ -115,14 +131,11 @@ function App() {
   }
 
   function openAdd() { setForm({...EMPTY_FORM, bus_name: getNextBusName()}); setModal({mode:"add"}); }
-
   function openEdit(bus) {
     setForm({ bus_name:bus.bus_name||"", location:bus.location||"", driver:bus.driver||"", last_service:bus.last_service||"", next_service:bus.next_service||"", mileage:bus.mileage||"", notes:bus.notes||"" });
     setModal({mode:"edit", bus});
   }
-
   function openView(bus) { setModal({mode:"view", bus}); }
-
   function getNextBusName() {
     const used = buses.map(b=>b.bus_name);
     return BUS_NAMES.find(n=>!used.includes(n)) || "";
@@ -208,7 +221,7 @@ function App() {
     cardRow: { display:"flex", alignItems:"center", gap:8, marginBottom:6, fontSize:13, color:"#c0c8d4" },
     cardIcon: { fontSize:15, width:20, textAlign:"center" },
     modalOverlay: { position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000, padding:20 },
-    modalBox: { background:"#1a2633", borderRadius:20, padding:"32px", maxWidth:520, width:"100%", border:"1px solid #2a3a4a", maxHeight:"90vh", overflowY:"auto" },
+    modalBox: { background:"#1a2633", borderRadius:20, padding:"32px", maxWidth:560, width:"100%", border:"1px solid #2a3a4a", maxHeight:"90vh", overflowY:"auto" },
     modalTitle: { fontFamily:"'Bebas Neue',sans-serif", fontSize:28, color:"#f5a623", letterSpacing:2, marginBottom:24 },
     label: { display:"block", fontSize:11, fontWeight:700, color:"#8a9ab0", letterSpacing:1, marginBottom:6, textTransform:"uppercase" },
     input: { width:"100%", background:"#0f1923", border:"1px solid #2a3a4a", borderRadius:10, padding:"10px 14px", color:"#e8e8e0", fontSize:14, outline:"none", marginBottom:16 },
@@ -233,6 +246,12 @@ function App() {
     nsCard: { background:"#1a1010", border:"1px solid #e74c3c44", borderRadius:12, padding:18, cursor:"pointer", position:"relative" },
     nsCardName: { fontFamily:"'Bebas Neue',sans-serif", fontSize:24, color:"#ff6b6b", letterSpacing:2, marginBottom:6 },
     nsCardRow: { display:"flex", alignItems:"center", gap:8, fontSize:12, color:"#c0a0a0", marginBottom:4 },
+    infoSection: { margin:"16px 0 0", padding:"16px", background:"#0a1018", borderRadius:12, border:"1px solid #2a3a4a" },
+    infoTitle: { fontFamily:"'Bebas Neue',sans-serif", fontSize:16, color:"#f5a623", letterSpacing:2, marginBottom:12 },
+    infoGrid: { display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 },
+    infoItem: { padding:"8px 10px", background:"#1a2633", borderRadius:8 },
+    infoLabel: { fontSize:10, color:"#8a9ab0", letterSpacing:1, textTransform:"uppercase", marginBottom:3 },
+    infoValue: { fontSize:13, fontWeight:700, color:"#e8e8e0", wordBreak:"break-all" },
   };
 
   function NeedsServiceBtn({ bus }) {
@@ -255,6 +274,37 @@ function App() {
         style={{ marginTop:8, width:"100%", padding:"8px 0", borderRadius:9, border:active?"2px solid #aacc00":"2px solid #aacc0044", background:active?"rgba(170,204,0,0.15)":"transparent", color:active?"#aacc00":"#6a7a4a", fontSize:12, fontWeight:800, cursor:toggling?"wait":"pointer", letterSpacing:0.5, display:"flex", alignItems:"center", justifyContent:"center", gap:6, opacity:toggling?0.6:1 }}>
         🔋 {toggling?"Updating…":active?"BATTERY KILL SWITCH ✓":"BATTERY KILL SWITCH"}
       </button>
+    );
+  }
+
+  function VehicleInfoPanel({ busName }) {
+    const info = VEHICLE_INFO[busName];
+    if (!info) return null;
+    return (
+      <div style={S.infoSection}>
+        <div style={S.infoTitle}>📋 VEHICLE DETAILS</div>
+        <div style={S.infoGrid}>
+          {[
+            {label:"VEH #", val:info.veh},
+            {label:"Year", val:info.year},
+            {label:"Make", val:info.make},
+            {label:"Model", val:info.model},
+            {label:"KAH ID #", val:info.kah_id},
+            {label:"Tag #", val:info.tag},
+            {label:"VIN", val:info.vin},
+            {label:"Purchase Value", val:info.value},
+            {label:"Fleet Locator ID", val:info.fleet_id},
+            {label:"Title #", val:info.title},
+            {label:"Emissions Exp.", val:info.emissions},
+            {label:"Tags Exp.", val:info.tags_exp},
+          ].map(r=>(
+            <div key={r.label} style={S.infoItem}>
+              <div style={S.infoLabel}>{r.label}</div>
+              <div style={S.infoValue}>{r.val||"—"}</div>
+            </div>
+          ))}
+        </div>
+      </div>
     );
   }
 
@@ -376,6 +426,7 @@ function App() {
                 <div style={{fontSize:14,color:"#c0c8d4",lineHeight:1.7,paddingLeft:32}}>{modal.bus.notes}</div>
               </div>
             )}
+            <VehicleInfoPanel busName={modal.bus.bus_name} />
             {modal.bus.updated_at && <div style={{fontSize:11,color:"#4a5a6a",marginTop:16,textAlign:"right"}}>Last updated: {new Date(modal.bus.updated_at).toLocaleString()}</div>}
             <div style={S.btnRow}>
               <button style={S.cancelBtn} onClick={()=>setModal(null)}>Close</button>
