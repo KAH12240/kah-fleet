@@ -98,7 +98,9 @@
   .progress-bar-wrap { width: 100%; background: #F0EDE8; border-radius: 8px; height: 8px; margin-top: 10px; overflow: hidden; }
   .progress-bar { height: 100%; background: #F59E0B; border-radius: 8px; transition: width 0.3s; }
   .progress-label { font-size: 13px; color: #888; text-align: center; margin-top: 6px; }
-  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #E8E8E3; border-top-color: #F59E0B; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  .followup-btn { border: none; border-radius: 6px; padding: 3px 9px; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .followup-btn.on { background: #FEF08A; color: #854D0E; border: 1px solid #FDE047; }
+  .followup-btn.off { background: #F3F4F6; color: #9CA3AF; border: 1px solid #E5E7EB; } border: 2px solid #E8E8E3; border-top-color: #F59E0B; border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-wrap { text-align: center; padding: 48px; color: #bbb; display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 14px; }
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 14px; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
@@ -173,6 +175,7 @@ let state = {
   centerLastReview: {},
   thisMonthVisit: {},
   thisMonthReview: {},
+  followUp: {},
   search: "",
   sort: "alpha",
   showModal: false,
@@ -330,10 +333,16 @@ function renderList() {
     const empty = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>`;
     const visitCheck = state.thisMonthVisit[c.id] ? check : empty;
     const reviewCheck = state.thisMonthReview[c.id] ? check : empty;
+    const fuOn = state.followUp[c.id] || false;
     return `<div class="card" data-action="open-center" data-id="${c.id}">
       <div class="avatar">${initials(c.name)}</div>
       <div style="flex:1;min-width:0">
-        <div class="card-name" style="color:${nameRed ? '#EF4444' : 'inherit'}">${c.name}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div class="card-name" style="color:${nameRed ? '#EF4444' : 'inherit'}">${c.name}</div>
+          <button class="followup-btn ${fuOn ? 'on' : 'off'}" data-action="toggle-followup" data-id="${c.id}" onclick="event.stopPropagation()">
+            ${fuOn ? "⚑ Follow Up" : "Follow Up"}
+          </button>
+        </div>
         <div class="card-dates">
           <div class="card-date-row">Last visited: <span style="color:${visitColor};font-weight:${visitOverdue ? '600' : '500'}">${lastV ? formatDate(lastV) : "Never"}</span></div>
           <div class="card-date-row">Last reviewed: <span style="color:${reviewColor};font-weight:${reviewOverdue ? '600' : '500'}">${lastR ? formatDate(lastR) : "Never"}</span></div>
@@ -493,7 +502,7 @@ function renderModal() {
 
   const reviewFields = `
     <div class="field-group"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any additional notes or observations…">${escHtml(state.formNotes)}</textarea></div>
-    ${!state.formNoReview ? `<div class="field-group"><label>Upload Review Form (optional)</label>${uploadHtml}</div>` : ""}`;
+    <div class="field-group"><label>${state.formNoReview ? "Add Photos (optional)" : "Upload Review Form (optional)"}</label>${uploadHtml}</div>`;
 
   return `
     <div class="overlay" id="modal-overlay">
@@ -549,6 +558,7 @@ function handleClick(e) {
   else if (action === "close-modal") { closeModal(); }
   else if (action === "trigger-upload") { document.getElementById("file-input").click(); }
   else if (action === "set-sort") { state.sort = el.dataset.sort; render(); }
+  else if (action === "toggle-followup") { toggleFollowUp(el.dataset.id); }
   else if (action === "set-type-review") { 
     const fn = document.getElementById("f-notes");
     if (fn) state.formNotes = fn.value;
@@ -675,6 +685,24 @@ async function doDelete() {
 }
 
 
+async function fetchFollowUp() {
+  const { data, error } = await sb.from("center_flags").select("center_id, follow_up");
+  if (error) { console.error(error); return; }
+  const fu = {};
+  CENTERS.forEach(c => { fu[c.id] = false; });
+  (data || []).forEach(r => { fu[r.center_id] = r.follow_up; });
+  state.followUp = fu;
+}
+
+async function toggleFollowUp(centerId) {
+  const current = state.followUp[centerId] || false;
+  const next = !current;
+  state.followUp[centerId] = next;
+  render();
+  const { error } = await sb.from("center_flags").upsert({ center_id: centerId, follow_up: next, updated_at: new Date().toISOString() });
+  if (error) { console.error(error); state.followUp[centerId] = current; render(); }
+}
+
 // ── File input ─────────────────────────────────────────────────────────
 document.getElementById("file-input").addEventListener("change", function(e) {
   const files = Array.from(e.target.files);
@@ -701,7 +729,7 @@ document.getElementById("file-input").addEventListener("change", function(e) {
 
 // ── Init ───────────────────────────────────────────────────────────────
 document.getElementById("app").addEventListener("click", handleClick);
-(async () => { await fetchCenterMeta(); render(); })();
+(async () => { await Promise.all([fetchCenterMeta(), fetchFollowUp()]); render(); })();
 </script>
 </body>
 </html>
