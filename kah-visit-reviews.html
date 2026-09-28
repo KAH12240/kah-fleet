@@ -99,7 +99,7 @@
   .progress-bar { height: 100%; background: #F59E0B; border-radius: 8px; transition: width 0.3s; }
   .progress-label { font-size: 13px; color: #888; text-align: center; margin-top: 6px; }
   .followup-btn { border: none; border-radius: 6px; padding: 3px 9px; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
-  .followup-btn.on { background: #FEF08A; color: #854D0E; border: 1px solid #FDE047; }
+  .followup-btn.on { background: #EF4444; color: #fff; border: 1px solid #DC2626; }
   .followup-btn.off { background: #F3F4F6; color: #9CA3AF; border: 1px solid #E5E7EB; } border: 2px solid #E8E8E3; border-top-color: #F59E0B; border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-wrap { text-align: center; padding: 48px; color: #bbb; display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 14px; }
@@ -339,7 +339,7 @@ function renderList() {
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <div class="card-name" style="color:${nameRed ? '#EF4444' : 'inherit'}">${c.name}</div>
-          <button class="followup-btn ${fuOn ? 'on' : 'off'}" data-action="toggle-followup" data-id="${c.id}" onclick="event.stopPropagation()">
+          <button class="followup-btn ${fuOn ? 'on' : 'off'}" data-action="toggle-followup" data-id="${c.id}">
             ${fuOn ? "⚑ Follow Up" : "Follow Up"}
           </button>
         </div>
@@ -558,7 +558,7 @@ function handleClick(e) {
   else if (action === "close-modal") { closeModal(); }
   else if (action === "trigger-upload") { document.getElementById("file-input").click(); }
   else if (action === "set-sort") { state.sort = el.dataset.sort; render(); }
-  else if (action === "toggle-followup") { toggleFollowUp(el.dataset.id); }
+  else if (action === "toggle-followup") { e.stopPropagation(); toggleFollowUp(el.dataset.id); }
   else if (action === "set-type-review") { 
     const fn = document.getElementById("f-notes");
     if (fn) state.formNotes = fn.value;
