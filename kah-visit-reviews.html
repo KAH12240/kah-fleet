@@ -547,6 +547,14 @@ function bindModal() {
   if (fn) fn.addEventListener("input", e => { state.formNotes = e.target.value; });
 }
 function handleClick(e) {
+  // Handle follow-up button first before anything else
+  const fuBtn = e.target.closest(".followup-btn");
+  if (fuBtn) {
+    e.stopPropagation();
+    toggleFollowUp(fuBtn.dataset.id);
+    return;
+  }
+
   const el = e.target.closest("[data-action]");
   if (!el) return;
   const action = el.dataset.action;
