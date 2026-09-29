@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>KAH Fleet Tracker v7</title>
+<title>KAH Fleet Tracker v10</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -40,19 +40,19 @@ const { createClient } = supabase;
 const sb = createClient("https://tjvzvwbtmilknguywdse.supabase.co", "sb_publishable_6gAsF5-FGs3SiEx-V2WL6Q_nenqNO5q");
 
 const VEHICLE_INFO = {
-  "Bus 21": { veh:"025", year:"2019", make:"International (72 Pass)", model:"CE", kah_id:"177221", tag:"1GS9780", vin:"4DRBUC8P2KB353519", value:"$84,985.00", fleet_id:"245003099", title:"61379912", emissions:"Exempt", tags_exp:"08/2026" },
-  "Bus 22": { veh:"026", year:"2017", make:"Freightliner (72 Pass)", model:"SB", kah_id:"177222", tag:"1GS9773", vin:"4UZABRDU0HCHS5655", value:"$65,985.00", fleet_id:"245003655", title:"61367811", emissions:"Exempt", tags_exp:"08/2026" },
-  "Bus 23": { veh:"027", year:"2017", make:"Freightliner (72 Pass)", model:"SB", kah_id:"177223", tag:"1GS9781", vin:"4UZABRDU2HCHS5656", value:"$65,985.00", fleet_id:"245003594", title:"61380106", emissions:"Exempt", tags_exp:"08/2026" },
-  "Bus 24": { veh:"028", year:"2017", make:"Blue Bird International (72 Pass)", model:"Vision", kah_id:"177224", tag:"2GT6096", vin:"1BAKGCPA5HF332023", value:"$73,700.00", fleet_id:"245003667", title:"61360512", emissions:"Exempt", tags_exp:"08/2026" },
-  "Bus 25": { veh:"029", year:"2015", make:"Blue Bird International (72 Pass)", model:"Vision", kah_id:"157225", tag:"2GT6097", vin:"1BAKGCPH0FF309467", value:"$51,700.00", fleet_id:"245003876", title:"61360514", emissions:"Exempt", tags_exp:"08/2026" },
-  "Bus 26": { veh:"030", year:"2015", make:"Blue Bird International (72 Pass)", model:"All American", kah_id:"157226", tag:"2GT6095", vin:"1BABJCPH0FF309471", value:"$51,700.00", fleet_id:"245003443", title:"61360513", emissions:"Exempt", tags_exp:"08/2026" },
-  "Bus 27": { veh:"033", year:"2019", make:"Blue Bird", model:"Vision", kah_id:"197127", tag:"4HB4682", vin:"1BAKGCSA8KF...", value:"$77,585.00", fleet_id:"—", title:"62590455", emissions:"Exempt", tags_exp:"05/2027" },
-  "Shuttle 1": { veh:"009", year:"2019", make:"Ford (34 Pass)", model:"F550", kah_id:"193402", tag:"10079P", vin:"1FDAF5GY2KED56866", value:"$88,000.00", fleet_id:"245003656", title:"57165006", emissions:"12/2027", tags_exp:"05/2029" },
-  "Shuttle 2": { veh:"010", year:"2019", make:"Ford (34 Pass)", model:"F550", kah_id:"193401", tag:"10078P", vin:"1FDAF5GY0KED56865", value:"$88,000.00", fleet_id:"245003737", title:"57164910", emissions:"5/27", tags_exp:"05/31/2029" },
-  "Van Red": { veh:"011", year:"2017", make:"Chevrolet (15 Pass)", model:"Express", kah_id:"171514", tag:"6DJ6183", vin:"1GAZGPFG4H1160638", value:"$35,000.00", fleet_id:"245003713", title:"505599788", emissions:"10/2027", tags_exp:"06/29" },
-  "Van Blue": { veh:"012", year:"2017", make:"Chevrolet (15 Pass)", model:"Express", kah_id:"171512", tag:"6DJ6191", vin:"1GAZGPFG6H1335326", value:"$35,000.00", fleet_id:"245003609", title:"50639294", emissions:"12/27", tags_exp:"07/31/2029" },
-  "Van Green": { veh:"003", year:"2014", make:"Chevrolet (15 Pass)", model:"Express", kah_id:"141513", tag:"4BY8042", vin:"1GAZG1FG4E1169607", value:"$32,000.00", fleet_id:"245003018", title:"46753279", emissions:"6/27", tags_exp:"Good, Needs sticker 5/14/26" },
-  "Van Yellow": { veh:"004", year:"2014", make:"Chevrolet (15 Pass)", model:"Express", kah_id:"141511", tag:"4BY8043", vin:"1GAZG1FG2E1205147", value:"$32,000.00", fleet_id:"—", title:"46753309", emissions:"5/27", tags_exp:"Good, Needs sticker 5/14/26" },
+  "Bus 21": { veh:"025", year:"2019", make:"International (72 Pass)", model:"CE", kah_id:"177221", tag:"1GS9780", vin:"4DRBUC8P2KB353519", fleet_id:"245003099", title:"61379912", emissions:"Exempt", tags_exp:"08/2026" },
+  "Bus 22": { veh:"026", year:"2017", make:"Freightliner (72 Pass)", model:"SB", kah_id:"177222", tag:"1GS9773", vin:"4UZABRDU0HCHS5655", fleet_id:"245003655", title:"61367811", emissions:"Exempt", tags_exp:"08/2026" },
+  "Bus 23": { veh:"027", year:"2017", make:"Freightliner (72 Pass)", model:"SB", kah_id:"177223", tag:"1GS9781", vin:"4UZABRDU2HCHS5656", fleet_id:"245003594", title:"61380106", emissions:"Exempt", tags_exp:"08/2026" },
+  "Bus 24": { veh:"028", year:"2017", make:"Blue Bird International (72 Pass)", model:"Vision", kah_id:"177224", tag:"2GT6096", vin:"1BAKGCPA5HF332023", fleet_id:"245003667", title:"61360512", emissions:"Exempt", tags_exp:"08/2026" },
+  "Bus 25": { veh:"029", year:"2015", make:"Blue Bird International (72 Pass)", model:"Vision", kah_id:"157225", tag:"2GT6097", vin:"1BAKGCPH0FF309467", fleet_id:"245003876", title:"61360514", emissions:"Exempt", tags_exp:"08/2026" },
+  "Bus 26": { veh:"030", year:"2015", make:"Blue Bird International (72 Pass)", model:"All American", kah_id:"157226", tag:"2GT6095", vin:"1BABJCPH0FF309471", fleet_id:"245003443", title:"61360513", emissions:"Exempt", tags_exp:"08/2026" },
+  "Bus 27": { veh:"033", year:"2019", make:"Blue Bird", model:"Vision", kah_id:"197127", tag:"4HB4682", vin:"1BAKGCSA8KF...", fleet_id:"—", title:"62590455", emissions:"Exempt", tags_exp:"05/2027" },
+  "Shuttle 1": { veh:"009", year:"2019", make:"Ford (34 Pass)", model:"F550", kah_id:"193402", tag:"10079P", vin:"1FDAF5GY2KED56866", fleet_id:"245003656", title:"57165006", emissions:"12/2027", tags_exp:"05/2029" },
+  "Shuttle 2": { veh:"010", year:"2019", make:"Ford (34 Pass)", model:"F550", kah_id:"193401", tag:"10078P", vin:"1FDAF5GY0KED56865", fleet_id:"245003737", title:"57164910", emissions:"5/27", tags_exp:"05/31/2029" },
+  "Van Red": { veh:"011", year:"2017", make:"Chevrolet (15 Pass)", model:"Express", kah_id:"171514", tag:"6DJ6183", vin:"1GAZGPFG4H1160638", fleet_id:"245003713", title:"505599788", emissions:"10/2027", tags_exp:"06/29" },
+  "Van Blue": { veh:"012", year:"2017", make:"Chevrolet (15 Pass)", model:"Express", kah_id:"171512", tag:"6DJ6191", vin:"1GAZGPFG6H1335326", fleet_id:"245003609", title:"50639294", emissions:"12/27", tags_exp:"07/31/2029" },
+  "Van Green": { veh:"003", year:"2014", make:"Chevrolet (15 Pass)", model:"Express", kah_id:"141513", tag:"4BY8042", vin:"1GAZG1FG4E1169607", fleet_id:"245003018", title:"46753279", emissions:"6/27", tags_exp:"Good, Needs sticker 5/14/26" },
+  "Van Yellow": { veh:"004", year:"2014", make:"Chevrolet (15 Pass)", model:"Express", kah_id:"141511", tag:"4BY8043", vin:"1GAZG1FG2E1205147", fleet_id:"—", title:"46753309", emissions:"5/27", tags_exp:"Good, Needs sticker 5/14/26" },
 };
 
 const CENTERS = [
@@ -309,7 +309,6 @@ function App() {
 
   return (
     <div style={{minHeight:"100vh",background:"#0f1923"}}>
-
       <div style={S.header}>
         <div>
           <div style={S.title}>🚌 KAH Fleet Tracker</div>
