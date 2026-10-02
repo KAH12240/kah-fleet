@@ -84,7 +84,7 @@
   .upload-area { width: 100%; border: 2px dashed #F59E0B; border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; color: #B45309; font-size: 14px; background: #FFFBEB; display: flex; flex-direction: column; align-items: center; gap: 8px; }
   .upload-area:hover { background: #FEF3C7; }
   .upload-area svg { width: 28px; height: 28px; }
-  .file-preview { background: #F9F9F6; border: 1px solid #ddd; border-radius: 8px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+  .file-preview { background: #F9F9F6; border: 1px solid #ddd; border-radius: 8px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; position: relative; }
   .file-preview-name { font-size: 14px; color: #444; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .file-preview-remove { background: rgba(0,0,0,0.12); border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; color: #555; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .img-preview { width: 100%; border-radius: 8px; border: 1px solid #ddd; display: block; margin-top: 8px; }
@@ -114,21 +114,14 @@
   </div>
 </div>
 
-<div id="app">
-  <div class="loading-wrap"><div class="spinner"></div>Connecting…</div>
-</div>
-
+<div id="app"><div class="loading-wrap"><div class="spinner"></div>Connecting…</div></div>
 <div class="toast" id="toast"></div>
 <input type="file" id="file-input" accept="image/*,.pdf" multiple style="display:none" />
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const { createClient } = supabase;
-const sb = createClient(
-  'https://tjvzvwbtmilknguywdse.supabase.co',
-  'sb_publishable_6gAsF5-FGs3SiEx-V2WL6Q_nenqNO5q'
-);
-
+const sb = createClient('https://tjvzvwbtmilknguywdse.supabase.co','sb_publishable_6gAsF5-FGs3SiEx-V2WL6Q_nenqNO5q');
 const CENTERS = [
   { id: "barnsley", name: "Barnsley Elementary" },
   { id: "bayard-rustin", name: "Bayard Rustin Elementary" },
@@ -160,161 +153,123 @@ const CENTERS = [
   { id: "westover", name: "Westover Elementary" },
   { id: "woodlin", name: "Woodlin Elementary" },
 ];
-
 let state = {
-  view: "list", selectedCenter: null, reviews: [], reviewsLoading: false, activeReview: null,
-  centerCounts: {}, centerLastVisit: {}, centerLastReview: {}, thisMonthVisit: {}, thisMonthReview: {}, followUp: {},
-  search: "", sort: "alpha", showModal: false, formDate: todayStr(), formReviewer: "", formNotes: "",
-  formFiles: [], saving: false, uploadProgress: 0, deleteConfirm: false, formNoReview: false,
+  view:"list",selectedCenter:null,reviews:[],reviewsLoading:false,activeReview:null,
+  centerCounts:{},centerLastVisit:{},centerLastReview:{},thisMonthVisit:{},thisMonthReview:{},followUp:{},
+  search:"",sort:"alpha",showModal:false,formDate:todayStr(),formReviewer:"",formNotes:"",
+  formFiles:[],saving:false,uploadProgress:0,deleteConfirm:false,formNoReview:false,
 };
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function formatDate(s){if(!s)return"";const d=new Date(s+"T00:00:00");return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}
+function initials(name){return name.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase();}
+function escHtml(str){if(!str)return"";return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3000);}
 
-function todayStr() { return new Date().toISOString().slice(0, 10); }
-function formatDate(s) {
-  if (!s) return "";
-  const d = new Date(s + "T00:00:00");
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
-function initials(name) { return name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase(); }
-function escHtml(str) {
-  if (!str) return "";
-  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-}
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg; t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 3000);
-}
-
-async function fetchCenterMeta() {
-  const { data, error } = await sb.from("visit_reviews").select("center_id, date, no_review").order("date", { ascending: false });
-  if (error) { console.error(error); return; }
-  const counts = {}, lastVisit = {}, lastReview = {}, thisMonthVisit = {}, thisMonthReview = {};
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-  const today = now.toISOString().slice(0, 10);
-  CENTERS.forEach(c => { counts[c.id] = 0; lastVisit[c.id] = null; lastReview[c.id] = null; thisMonthVisit[c.id] = false; thisMonthReview[c.id] = false; });
-  (data || []).forEach(r => {
-    counts[r.center_id] = (counts[r.center_id] || 0) + 1;
-    if (r.no_review && !lastVisit[r.center_id]) lastVisit[r.center_id] = r.date;
-    if (!r.no_review && !lastReview[r.center_id]) lastReview[r.center_id] = r.date;
-    if (r.date >= monthStart && r.date <= today) {
-      if (r.no_review) thisMonthVisit[r.center_id] = true;
-      else thisMonthReview[r.center_id] = true;
-    }
+async function fetchCenterMeta(){
+  const{data,error}=await sb.from("visit_reviews").select("center_id, date, no_review").order("date",{ascending:false});
+  if(error){console.error(error);return;}
+  const counts={},lastVisit={},lastReview={},tmv={},tmr={};
+  const now=new Date();
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1).toISOString().slice(0,10);
+  const today=now.toISOString().slice(0,10);
+  CENTERS.forEach(c=>{counts[c.id]=0;lastVisit[c.id]=null;lastReview[c.id]=null;tmv[c.id]=false;tmr[c.id]=false;});
+  (data||[]).forEach(r=>{
+    counts[r.center_id]=(counts[r.center_id]||0)+1;
+    if(r.no_review&&!lastVisit[r.center_id])lastVisit[r.center_id]=r.date;
+    if(!r.no_review&&!lastReview[r.center_id])lastReview[r.center_id]=r.date;
+    if(r.date>=monthStart&&r.date<=today){if(r.no_review)tmv[r.center_id]=true;else tmr[r.center_id]=true;}
   });
-  state.centerCounts = counts; state.centerLastVisit = lastVisit; state.centerLastReview = lastReview;
-  state.thisMonthVisit = thisMonthVisit; state.thisMonthReview = thisMonthReview;
+  state.centerCounts=counts;state.centerLastVisit=lastVisit;state.centerLastReview=lastReview;
+  state.thisMonthVisit=tmv;state.thisMonthReview=tmr;
 }
-
-async function fetchReviewsForCenter(centerId) {
-  const { data, error } = await sb.from("visit_reviews").select("*").eq("center_id", centerId).order("date", { ascending: false });
-  if (error) { console.error(error); return []; }
-  return (data || []).map(r => ({
-    id: r.id, centerId: r.center_id, date: r.date, reviewer: r.reviewer, notes: r.notes || "",
-    hasFile: r.has_image, fileType: r.file_type, fileUrl: r.file_url, noReview: r.no_review || false, createdAt: r.created_at,
-  }));
+async function fetchReviewsForCenter(centerId){
+  const{data,error}=await sb.from("visit_reviews").select("*").eq("center_id",centerId).order("date",{ascending:false});
+  if(error){console.error(error);return[];}
+  return(data||[]).map(r=>({id:r.id,centerId:r.center_id,date:r.date,reviewer:r.reviewer,notes:r.notes||"",hasFile:r.has_image,fileType:r.file_type,fileUrl:r.file_url,noReview:r.no_review||false,createdAt:r.created_at}));
 }
-
-async function uploadFile(reviewId, file) {
-  const ext = file.type === "application/pdf" ? "pdf" : "jpg";
-  const path = `${reviewId}.${ext}`;
-  const { error } = await sb.storage.from("review-files").upload(path, file, { contentType: file.type, upsert: true });
-  if (error) throw error;
-  const { data } = sb.storage.from("review-files").getPublicUrl(path);
+async function uploadFile(reviewId,file){
+  const ext=file.type==="application/pdf"?"pdf":"jpg";
+  const path=`${reviewId}.${ext}`;
+  const{error}=await sb.storage.from("review-files").upload(path,file,{contentType:file.type,upsert:true});
+  if(error)throw error;
+  const{data}=sb.storage.from("review-files").getPublicUrl(path);
   return data.publicUrl;
 }
+async function insertReview(review,fileUrl){
+  const{error}=await sb.from("visit_reviews").insert({id:review.id,center_id:review.centerId,date:review.date,reviewer:review.reviewer,notes:review.notes||null,has_image:review.hasFile,file_type:review.fileType,file_url:fileUrl||null,no_review:review.noReview||false,created_at:review.createdAt});
+  if(error)throw error;
+}
+async function removeReview(reviewId,fileType){
+  if(fileType){try{const ext=fileType==="pdf"?"pdf":"jpg";await sb.storage.from("review-files").remove([`${reviewId}-0.${ext}`,`${reviewId}.${ext}`]);}catch(e){console.warn(e);}}
+  const{error}=await sb.from("visit_reviews").delete().eq("id",reviewId);
+  if(error)throw error;
+}
+async function fetchFollowUp(){
+  const{data,error}=await sb.from("center_flags").select("center_id, follow_up");
+  if(error){console.error(error);return;}
+  const fu={};CENTERS.forEach(c=>{fu[c.id]=false;});
+  (data||[]).forEach(r=>{fu[r.center_id]=r.follow_up;});state.followUp=fu;
+}
+async function toggleFollowUp(centerId){
+  const current=state.followUp[centerId]||false;const next=!current;
+  state.followUp[centerId]=next;render();
+  const{error}=await sb.from("center_flags").upsert({center_id:centerId,follow_up:next,updated_at:new Date().toISOString()});
+  if(error){console.error(error);state.followUp[centerId]=current;render();}
+}
 
-async function insertReview(review, fileUrl) {
-  const { error } = await sb.from("visit_reviews").insert({
-    id: review.id, center_id: review.centerId, date: review.date, reviewer: review.reviewer,
-    notes: review.notes || null, has_image: review.hasFile, file_type: review.fileType,
-    file_url: fileUrl || null, no_review: review.noReview || false, created_at: review.createdAt,
+function render(){
+  const app=document.getElementById("app");
+  if(state.view==="list")app.innerHTML=renderList();
+  else if(state.view==="center")app.innerHTML=renderCenter();
+  else if(state.view==="review")app.innerHTML=renderReview();
+  if(state.showModal){app.innerHTML+=renderModal();bindModal();}
+  const si=document.getElementById("search-input");
+  if(si)si.addEventListener("input",e=>{state.search=e.target.value;render();});
+}
+
+function renderList(){
+  let filtered=CENTERS.filter(c=>c.name.toLowerCase().includes(state.search.toLowerCase()));
+  if(state.sort==="alpha")filtered=[...filtered].sort((a,b)=>a.name.localeCompare(b.name));
+  else if(state.sort==="oldest-visit")filtered=[...filtered].sort((a,b)=>{
+    if(!state.centerLastVisit[a.id]&&!state.centerLastVisit[b.id])return a.name.localeCompare(b.name);
+    if(!state.centerLastVisit[a.id])return -1;if(!state.centerLastVisit[b.id])return 1;
+    return state.centerLastVisit[a.id]<state.centerLastVisit[b.id]?-1:1;
   });
-  if (error) throw error;
-}
-
-async function removeReview(reviewId, fileType) {
-  if (fileType) {
-    try {
-      const ext = fileType === "pdf" ? "pdf" : "jpg";
-      await sb.storage.from("review-files").remove([`${reviewId}-0.${ext}`, `${reviewId}.${ext}`]);
-    } catch (e) { console.warn("Storage cleanup failed:", e); }
-  }
-  const { error } = await sb.from("visit_reviews").delete().eq("id", reviewId);
-  if (error) throw error;
-}
-
-async function fetchFollowUp() {
-  const { data, error } = await sb.from("center_flags").select("center_id, follow_up");
-  if (error) { console.error(error); return; }
-  const fu = {};
-  CENTERS.forEach(c => { fu[c.id] = false; });
-  (data || []).forEach(r => { fu[r.center_id] = r.follow_up; });
-  state.followUp = fu;
-}
-
-async function toggleFollowUp(centerId) {
-  const current = state.followUp[centerId] || false;
-  const next = !current;
-  state.followUp[centerId] = next;
-  render();
-  const { error } = await sb.from("center_flags").upsert({ center_id: centerId, follow_up: next, updated_at: new Date().toISOString() });
-  if (error) { console.error(error); state.followUp[centerId] = current; render(); }
-}
-
-function render() {
-  const app = document.getElementById("app");
-  if (state.view === "list") app.innerHTML = renderList();
-  else if (state.view === "center") app.innerHTML = renderCenter();
-  else if (state.view === "review") app.innerHTML = renderReview();
-  if (state.showModal) { app.innerHTML += renderModal(); bindModal(); }
-  const si = document.getElementById("search-input");
-  if (si) si.addEventListener("input", e => { state.search = e.target.value; render(); });
-}
-
-function renderList() {
-  let filtered = CENTERS.filter(c => c.name.toLowerCase().includes(state.search.toLowerCase()));
-  if (state.sort === "alpha") filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
-  else if (state.sort === "oldest-visit") filtered = [...filtered].sort((a, b) => {
-    if (!state.centerLastVisit[a.id] && !state.centerLastVisit[b.id]) return a.name.localeCompare(b.name);
-    if (!state.centerLastVisit[a.id]) return -1; if (!state.centerLastVisit[b.id]) return 1;
-    return state.centerLastVisit[a.id] < state.centerLastVisit[b.id] ? -1 : 1;
+  else if(state.sort==="oldest-review")filtered=[...filtered].sort((a,b)=>{
+    if(!state.centerLastReview[a.id]&&!state.centerLastReview[b.id])return a.name.localeCompare(b.name);
+    if(!state.centerLastReview[a.id])return -1;if(!state.centerLastReview[b.id])return 1;
+    return state.centerLastReview[a.id]<state.centerLastReview[b.id]?-1:1;
   });
-  else if (state.sort === "oldest-review") filtered = [...filtered].sort((a, b) => {
-    if (!state.centerLastReview[a.id] && !state.centerLastReview[b.id]) return a.name.localeCompare(b.name);
-    if (!state.centerLastReview[a.id]) return -1; if (!state.centerLastReview[b.id]) return 1;
-    return state.centerLastReview[a.id] < state.centerLastReview[b.id] ? -1 : 1;
-  });
-  const oneMonthAgo = new Date(); oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-  const cutoff = oneMonthAgo.toISOString().slice(0, 10);
-  const check = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
-  const empty = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>`;
-  const items = filtered.map(c => {
-    const count = state.centerCounts[c.id] || 0;
-    const lastV = state.centerLastVisit[c.id]; const lastR = state.centerLastReview[c.id];
-    const visitOverdue = !lastV || lastV < cutoff; const reviewOverdue = !lastR || lastR < cutoff;
-    const nameRed = visitOverdue && reviewOverdue;
-    const visitColor = visitOverdue ? "#EF4444" : "#888"; const reviewColor = reviewOverdue ? "#EF4444" : "#888";
-    const visitCheck = state.thisMonthVisit[c.id] ? check : empty;
-    const reviewCheck = state.thisMonthReview[c.id] ? check : empty;
-    const fuOn = state.followUp[c.id] || false;
+  const d16=new Date();d16.setDate(d16.getDate()-16);const cutoffVisit=d16.toISOString().slice(0,10);
+  const d90=new Date();d90.setDate(d90.getDate()-90);const cutoffReview=d90.toISOString().slice(0,10);
+  const check=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const empty=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>`;
+  const items=filtered.map(c=>{
+    const count=state.centerCounts[c.id]||0;
+    const lastV=state.centerLastVisit[c.id];const lastR=state.centerLastReview[c.id];
+    const visitOverdue=!lastV||lastV<cutoffVisit;const reviewOverdue=!lastR||lastR<cutoffReview;
+    const nameRed=visitOverdue&&reviewOverdue;
+    const visitColor=visitOverdue?"#EF4444":"#888";const reviewColor=reviewOverdue?"#EF4444":"#888";
+    const visitCheck=(lastV&&lastV>=cutoffVisit)?check:empty;
+    const reviewCheck=(lastR&&lastR>=cutoffReview)?check:empty;
+    const fuOn=state.followUp[c.id]||false;
     return `<div class="card" data-action="open-center" data-id="${c.id}">
       <div class="avatar">${initials(c.name)}</div>
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <div class="card-name" style="color:${nameRed ? '#EF4444' : 'inherit'}">${c.name}</div>
-          <button class="followup-btn ${fuOn ? 'on' : 'off'}" data-id="${c.id}">${fuOn ? "⚑ Follow Up" : "Follow Up"}</button>
+          <div class="card-name" style="color:${nameRed?'#EF4444':'inherit'}">${c.name}</div>
+          <button class="followup-btn ${fuOn?'on':'off'}" data-id="${c.id}">${fuOn?"⚑ Follow Up":"Follow Up"}</button>
         </div>
         <div class="card-dates">
-          <div class="card-date-row">Last visited: <span style="color:${visitColor};font-weight:${visitOverdue?'600':'500'}">${lastV ? formatDate(lastV) : "Never"}</span></div>
-          <div class="card-date-row">Last reviewed: <span style="color:${reviewColor};font-weight:${reviewOverdue?'600':'500'}">${lastR ? formatDate(lastR) : "Never"}</span></div>
+          <div class="card-date-row">Last visited: <span style="color:${visitColor};font-weight:${visitOverdue?'600':'500'}">${lastV?formatDate(lastV):"Never"}</span></div>
+          <div class="card-date-row">Last reviewed: <span style="color:${reviewColor};font-weight:${reviewOverdue?'600':'500'}">${lastR?formatDate(lastR):"Never"}</span></div>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:3px;margin-right:8px;flex-shrink:0">
         <div style="display:flex;align-items:center;gap:3px;font-size:11px;color:#666;white-space:nowrap">${visitCheck} Visited</div>
         <div style="display:flex;align-items:center;gap:3px;font-size:11px;color:#666;white-space:nowrap">${reviewCheck} Reviewed</div>
       </div>
-      <span class="badge">${count} visit${count !== 1 ? "s" : ""}</span>
+      <span class="badge">${count} visit${count!==1?"s":""}</span>
       <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </div>`;
   }).join("");
@@ -326,23 +281,22 @@ function renderList() {
       <button class="sort-btn ${state.sort==='oldest-review'?'active':''}" data-action="set-sort" data-sort="oldest-review">Oldest reviewed first</button>
     </div>
     <span class="count-label">${filtered.length} center${filtered.length!==1?"s":""}</span>
-    ${items || '<div class="empty"><p>No centers found.</p></div>'}`;
+    ${items||'<div class="empty"><p>No centers found.</p></div>'}`;
 }
 
-function renderCenter() {
-  const c = state.selectedCenter;
-  let revHtml = "";
-  if (state.reviewsLoading) revHtml = `<div class="loading-wrap"><div class="spinner"></div>Loading…</div>`;
-  else if (state.reviews.length === 0) revHtml = `<div class="empty"><div class="emoji">📋</div><p>No entries yet.</p><small>Tap "Add" to log a visit or review.</small></div>`;
-  else revHtml = state.reviews.map(r => {
-    const icon = r.noReview ? "👣" : r.fileType === "pdf" ? "📄" : r.hasFile ? "📷" : "";
-    const tag = r.noReview ? `<span class="no-review-tag">visit only</span>` : "";
+function renderCenter(){
+  const c=state.selectedCenter;let revHtml="";
+  if(state.reviewsLoading)revHtml=`<div class="loading-wrap"><div class="spinner"></div>Loading…</div>`;
+  else if(state.reviews.length===0)revHtml=`<div class="empty"><div class="emoji">📋</div><p>No entries yet.</p><small>Tap "Add" to log a visit or review.</small></div>`;
+  else revHtml=state.reviews.map(r=>{
+    const icon=r.noReview?"👣":r.fileType==="pdf"?"📄":r.hasFile?"📷":"";
+    const tag=r.noReview?`<span class="no-review-tag">visit only</span>`:"";
     return `<div class="rev-card" data-action="open-review" data-id="${r.id}">
       <div class="rev-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
       <div style="flex:1;min-width:0">
         <div class="rev-date">${formatDate(r.date)}${tag}</div>
-        <div class="rev-meta">${r.noReview ? "Visited by" : "Reviewed by"} ${escHtml(r.reviewer)}${icon ? " &nbsp;" + icon : ""}</div>
-        ${r.notes ? `<div class="rev-notes-preview">${escHtml(r.notes)}</div>` : ""}
+        <div class="rev-meta">${r.noReview?"Visited by":"Reviewed by"} ${escHtml(r.reviewer)}${icon?" &nbsp;"+icon:""}</div>
+        ${r.notes?`<div class="rev-notes-preview">${escHtml(r.notes)}</div>`:""}
       </div>
       <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </div>`;
@@ -356,52 +310,47 @@ function renderCenter() {
     ${revHtml}`;
 }
 
-function renderReview() {
-  const r = state.activeReview;
-  let fileHtml = "";
-  if (r.hasFile && r.fileUrl) {
-    const urls = r.fileUrl.split(",");
-    fileHtml = urls.map((url, i) => {
-      const isPdf = url.includes(".pdf") || r.fileType === "pdf";
-      return isPdf
-        ? `<embed src="${escHtml(url)}" type="application/pdf" class="pdf-viewer" style="margin-bottom:8px" /><a class="open-link" href="${escHtml(url)}" target="_blank" style="margin-bottom:12px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Open PDF${urls.length>1?" "+(i+1):""}</a>`
-        : `<img class="review-img" src="${escHtml(url)}" alt="Review ${i+1}" style="margin-bottom:8px" />`;
+function renderReview(){
+  const r=state.activeReview;let fileHtml="";
+  if(r.hasFile&&r.fileUrl){
+    const urls=r.fileUrl.split(",");
+    fileHtml=urls.map((url,i)=>{
+      const isPdf=url.includes(".pdf")||r.fileType==="pdf";
+      return isPdf?`<embed src="${escHtml(url)}" type="application/pdf" class="pdf-viewer" style="margin-bottom:8px" /><a class="open-link" href="${escHtml(url)}" target="_blank" style="margin-bottom:12px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Open PDF${urls.length>1?" "+(i+1):""}</a>`
+        :`<img class="review-img" src="${escHtml(url)}" alt="Review ${i+1}" style="margin-bottom:8px" />`;
     }).join("");
-  } else if (r.hasFile) fileHtml = `<div style="font-size:13px;color:#bbb">File unavailable</div>`;
-  const confirmHtml = state.deleteConfirm ? `<div class="confirm-box"><p>Delete this entry? This cannot be undone.</p><div class="confirm-btns"><button class="confirm-del" data-action="confirm-delete">Delete</button><button class="confirm-cancel" data-action="cancel-delete">Cancel</button></div></div>` : "";
+  }else if(r.hasFile)fileHtml=`<div style="font-size:13px;color:#bbb">File unavailable</div>`;
+  const confirmHtml=state.deleteConfirm?`<div class="confirm-box"><p>Delete this entry? This cannot be undone.</p><div class="confirm-btns"><button class="confirm-del" data-action="confirm-delete">Delete</button><button class="confirm-cancel" data-action="cancel-delete">Cancel</button></div></div>`:"";
   return `
     <button class="back-btn" data-action="go-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> ${escHtml(state.selectedCenter.name)}</button>
     <div class="detail-card">
-      <div class="detail-head"><h2>${r.noReview ? "Visit Log" : "Visit Review"}</h2><button class="delete-btn" data-action="start-delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg> Delete</button></div>
+      <div class="detail-head"><h2>${r.noReview?"Visit Log":"Visit Review"}</h2><button class="delete-btn" data-action="start-delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg> Delete</button></div>
       <div class="detail-row"><span class="detail-label">Date</span><span class="detail-val">${formatDate(r.date)}</span></div>
-      <div class="detail-row"><span class="detail-label">${r.noReview ? "Visited by" : "Reviewer"}</span><span class="detail-val">${escHtml(r.reviewer)}</span></div>
-      ${r.notes ? `<div class="notes-label">Notes</div><div class="notes-box">${escHtml(r.notes)}</div>` : ""}
+      <div class="detail-row"><span class="detail-label">${r.noReview?"Visited by":"Reviewer"}</span><span class="detail-val">${escHtml(r.reviewer)}</span></div>
+      ${r.notes?`<div class="notes-label">Notes</div><div class="notes-box">${escHtml(r.notes)}</div>`:""}
       ${confirmHtml}
       <hr class="divider">
-      ${r.noReview
-        ? (r.hasFile ? `<div class="notes-label">Photos</div>${fileHtml}` : `<div class="no-file" style="color:#B45309;font-size:13px">Visit logged — no photos attached.</div>`)
-        : `<div class="notes-label">Uploaded Review Form</div>${r.hasFile ? fileHtml : `<div class="no-file">No file uploaded.</div>`}`}
+      ${r.noReview?(r.hasFile?`<div class="notes-label">Photos</div>${fileHtml}`:`<div class="no-file" style="color:#B45309;font-size:13px">Visit logged — no photos attached.</div>`):`<div class="notes-label">Uploaded Review Form</div>${r.hasFile?fileHtml:`<div class="no-file">No file uploaded.</div>`}`}
     </div>`;
 }
 
-function renderModal() {
-  const c = state.selectedCenter;
-  let uploadHtml = "";
-  if (state.formFiles.length > 0) {
-    const fileList = state.formFiles.map((f, i) => `
+function renderModal(){
+  const c=state.selectedCenter;let uploadHtml="";
+  if(state.formFiles.length>0){
+    const fileList=state.formFiles.map((f,i)=>`
       <div class="file-preview" style="margin-bottom:6px">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B45309" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         <span class="file-preview-name">${escHtml(f.name)}</span>
         <button class="file-preview-remove" data-action="remove-file" data-index="${i}">&#x2715;</button>
       </div>
-      ${f.previewUrl ? `<img class="img-preview" src="${f.previewUrl}" alt="Preview" style="margin-bottom:6px" />` : ""}`
+      ${f.previewUrl?`<img class="img-preview" src="${f.previewUrl}" alt="Preview" style="margin-bottom:6px" />`:""}`
     ).join("");
-    uploadHtml = `${fileList}<div class="upload-area" data-action="trigger-upload" style="padding:12px;margin-top:4px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:18px;height:18px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span style="font-size:13px">Add more files</span></div>`;
-  } else {
-    uploadHtml = `<div class="upload-area" data-action="trigger-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Upload files</span><span style="font-size:11px;color:#aaa">JPG, PNG, PDF</span></div>`;
+    uploadHtml=`${fileList}<div class="upload-area" data-action="trigger-upload" style="padding:12px;margin-top:4px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:18px;height:18px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span style="font-size:13px">Add more files</span></div>`;
+  }else{
+    uploadHtml=`<div class="upload-area" data-action="trigger-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Upload files</span><span style="font-size:11px;color:#aaa">JPG, PNG, PDF</span></div>`;
   }
-  const canSave = state.formDate && state.formReviewer.trim();
-  const progressHtml = state.saving && state.uploadProgress > 0 ? `<div class="progress-bar-wrap"><div class="progress-bar" style="width:${state.uploadProgress}%"></div></div><div class="progress-label">${state.uploadProgress < 100 ? "Uploading… "+state.uploadProgress+"%" : "Saving…"}</div>` : "";
+  const canSave=state.formDate&&state.formReviewer.trim();
+  const progressHtml=state.saving&&state.uploadProgress>0?`<div class="progress-bar-wrap"><div class="progress-bar" style="width:${state.uploadProgress}%"></div></div><div class="progress-label">${state.uploadProgress<100?"Uploading… "+state.uploadProgress+"%":"Saving…"}</div>`:"";
   return `
     <div class="overlay" id="modal-overlay">
       <div class="modal">
@@ -423,126 +372,112 @@ function renderModal() {
           </div>
         </div>
         <div class="field-group"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any additional notes or observations…">${escHtml(state.formNotes)}</textarea></div>
-        <div class="field-group"><label>${state.formNoReview ? "Add Photos (optional)" : "Upload Review Form (optional)"}</label>${uploadHtml}</div>
+        <div class="field-group"><label>${state.formNoReview?"Add Photos (optional)":"Upload Review Form (optional)"}</label>${uploadHtml}</div>
         ${progressHtml}
         <button class="save-btn" data-action="save-review" ${!canSave||state.saving?"disabled":""}>${state.saving?"Saving…":"Save"}</button>
       </div>
     </div>`;
 }
 
-function bindModal() {
-  const overlay = document.getElementById("modal-overlay");
-  if (overlay) overlay.addEventListener("click", e => { if (e.target === overlay) closeModal(); });
-  const fd = document.getElementById("f-date"); const fr = document.getElementById("f-reviewer"); const fn = document.getElementById("f-notes");
-  if (fd) fd.addEventListener("change", e => { state.formDate = e.target.value; });
-  if (fr) fr.addEventListener("change", e => { state.formReviewer = e.target.value; render(); });
-  if (fn) fn.addEventListener("input", e => { state.formNotes = e.target.value; });
+function bindModal(){
+  const overlay=document.getElementById("modal-overlay");
+  if(overlay)overlay.addEventListener("click",e=>{if(e.target===overlay)closeModal();});
+  const fd=document.getElementById("f-date");const fr=document.getElementById("f-reviewer");const fn=document.getElementById("f-notes");
+  if(fd)fd.addEventListener("change",e=>{state.formDate=e.target.value;});
+  if(fr)fr.addEventListener("change",e=>{state.formReviewer=e.target.value;render();});
+  if(fn)fn.addEventListener("input",e=>{state.formNotes=e.target.value;});
 }
 
-function handleClick(e) {
-  const fuBtn = e.target.closest(".followup-btn");
-  if (fuBtn) { e.stopPropagation(); toggleFollowUp(fuBtn.dataset.id); return; }
-  const el = e.target.closest("[data-action]");
-  if (!el) return;
-  const action = el.dataset.action;
-  if (action === "open-center") { const c = CENTERS.find(c => c.id === el.dataset.id); if (c) openCenter(c); }
-  else if (action === "go-list") { state.view = "list"; state.selectedCenter = null; state.reviews = []; render(); }
-  else if (action === "go-center") { state.view = "center"; state.activeReview = null; state.deleteConfirm = false; render(); }
-  else if (action === "open-review") { const r = state.reviews.find(r => r.id === el.dataset.id); if (r) openReview(r); }
-  else if (action === "open-modal") { state.showModal = true; render(); }
-  else if (action === "close-modal") { closeModal(); }
-  else if (action === "trigger-upload") { document.getElementById("file-input").click(); }
-  else if (action === "set-sort") { state.sort = el.dataset.sort; render(); }
-  else if (action === "set-type-review") { const fn = document.getElementById("f-notes"); if (fn) state.formNotes = fn.value; state.formNoReview = false; state.showModal = true; render(); }
-  else if (action === "set-type-visit") { const fn = document.getElementById("f-notes"); if (fn) state.formNotes = fn.value; state.formNoReview = true; state.showModal = true; render(); }
-  else if (action === "remove-file") { const idx = parseInt(el.dataset.index); state.formFiles = state.formFiles.filter((_, i) => i !== idx); render(); }
-  else if (action === "save-review") { saveReview(); }
-  else if (action === "start-delete") { state.deleteConfirm = true; render(); }
-  else if (action === "confirm-delete") { doDelete(); }
-  else if (action === "cancel-delete") { state.deleteConfirm = false; render(); }
+function handleClick(e){
+  const fuBtn=e.target.closest(".followup-btn");
+  if(fuBtn){e.stopPropagation();toggleFollowUp(fuBtn.dataset.id);return;}
+  const el=e.target.closest("[data-action]");if(!el)return;
+  const action=el.dataset.action;
+  if(action==="open-center"){const c=CENTERS.find(c=>c.id===el.dataset.id);if(c)openCenter(c);}
+  else if(action==="go-list"){state.view="list";state.selectedCenter=null;state.reviews=[];render();}
+  else if(action==="go-center"){state.view="center";state.activeReview=null;state.deleteConfirm=false;render();}
+  else if(action==="open-review"){const r=state.reviews.find(r=>r.id===el.dataset.id);if(r)openReview(r);}
+  else if(action==="open-modal"){state.showModal=true;render();}
+  else if(action==="close-modal"){closeModal();}
+  else if(action==="trigger-upload"){document.getElementById("file-input").click();}
+  else if(action==="set-sort"){state.sort=el.dataset.sort;render();}
+  else if(action==="set-type-review"){const fn=document.getElementById("f-notes");if(fn)state.formNotes=fn.value;state.formNoReview=false;state.showModal=true;render();}
+  else if(action==="set-type-visit"){const fn=document.getElementById("f-notes");if(fn)state.formNotes=fn.value;state.formNoReview=true;state.showModal=true;render();}
+  else if(action==="remove-file"){const idx=parseInt(el.dataset.index);state.formFiles=state.formFiles.filter((_,i)=>i!==idx);render();}
+  else if(action==="save-review"){saveReview();}
+  else if(action==="start-delete"){state.deleteConfirm=true;render();}
+  else if(action==="confirm-delete"){doDelete();}
+  else if(action==="cancel-delete"){state.deleteConfirm=false;render();}
 }
 
-function closeModal() {
-  state.showModal = false; state.formDate = todayStr(); state.formReviewer = ""; state.formNotes = "";
-  state.formFiles = []; state.formNoReview = false; state.saving = false; state.uploadProgress = 0; render();
+function closeModal(){
+  state.showModal=false;state.formDate=todayStr();state.formReviewer="";state.formNotes="";
+  state.formFiles=[];state.formNoReview=false;state.saving=false;state.uploadProgress=0;render();
 }
-
-async function openCenter(center) {
-  state.selectedCenter = center; state.view = "center"; state.reviewsLoading = true; state.reviews = []; render();
-  state.reviews = await fetchReviewsForCenter(center.id); state.reviewsLoading = false; render();
+async function openCenter(center){
+  state.selectedCenter=center;state.view="center";state.reviewsLoading=true;state.reviews=[];render();
+  state.reviews=await fetchReviewsForCenter(center.id);state.reviewsLoading=false;render();
 }
+function openReview(rev){state.activeReview=rev;state.deleteConfirm=false;state.view="review";render();}
 
-function openReview(rev) { state.activeReview = rev; state.deleteConfirm = false; state.view = "review"; render(); }
-
-async function saveReview() {
-  const fd = document.getElementById("f-date"); const fr = document.getElementById("f-reviewer"); const fn = document.getElementById("f-notes");
-  if (fd) state.formDate = fd.value; if (fr) state.formReviewer = fr.value; if (fn) state.formNotes = fn.value;
-  if (!state.formDate || !state.formReviewer.trim()) return;
-  state.saving = true; state.uploadProgress = 0; render();
-  const reviewId = state.selectedCenter.id + "-" + Date.now();
-  const review = {
-    id: reviewId, centerId: state.selectedCenter.id, date: state.formDate, reviewer: state.formReviewer.trim(),
-    notes: state.formNotes.trim(), hasFile: state.formFiles.length > 0,
-    fileType: state.formFiles.length > 0 ? state.formFiles[0].fileType : null,
-    noReview: state.formNoReview, createdAt: new Date().toISOString(),
-  };
-  try {
-    let fileUrls = [];
-    if (state.formFiles.length > 0) {
-      for (let i = 0; i < state.formFiles.length; i++) {
-        state.uploadProgress = Math.round(20 + (60 * i / state.formFiles.length)); render();
-        const url = await uploadFile(reviewId + "-" + i, state.formFiles[i].file);
-        fileUrls.push(url);
+async function saveReview(){
+  const fd=document.getElementById("f-date");const fr=document.getElementById("f-reviewer");const fn=document.getElementById("f-notes");
+  if(fd)state.formDate=fd.value;if(fr)state.formReviewer=fr.value;if(fn)state.formNotes=fn.value;
+  if(!state.formDate||!state.formReviewer.trim())return;
+  state.saving=true;state.uploadProgress=0;render();
+  const reviewId=state.selectedCenter.id+"-"+Date.now();
+  const review={id:reviewId,centerId:state.selectedCenter.id,date:state.formDate,reviewer:state.formReviewer.trim(),notes:state.formNotes.trim(),hasFile:state.formFiles.length>0,fileType:state.formFiles.length>0?state.formFiles[0].fileType:null,noReview:state.formNoReview,createdAt:new Date().toISOString()};
+  try{
+    let fileUrls=[];
+    if(state.formFiles.length>0){
+      for(let i=0;i<state.formFiles.length;i++){
+        state.uploadProgress=Math.round(20+(60*i/state.formFiles.length));render();
+        const url=await uploadFile(reviewId+"-"+i,state.formFiles[i].file);fileUrls.push(url);
       }
-      state.uploadProgress = 85; render();
+      state.uploadProgress=85;render();
     }
-    const fileUrl = fileUrls.length > 0 ? fileUrls.join(",") : null;
-    await insertReview(review, fileUrl);
-    state.uploadProgress = 100; review.fileUrl = fileUrl;
-    state.centerCounts[state.selectedCenter.id] = (state.centerCounts[state.selectedCenter.id] || 0) + 1;
-    if (review.noReview) {
-      if (!state.centerLastVisit[state.selectedCenter.id] || review.date >= state.centerLastVisit[state.selectedCenter.id]) state.centerLastVisit[state.selectedCenter.id] = review.date;
-      const now = new Date(); const ms = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
-      if (review.date >= ms) state.thisMonthVisit[state.selectedCenter.id] = true;
-    } else {
-      if (!state.centerLastReview[state.selectedCenter.id] || review.date >= state.centerLastReview[state.selectedCenter.id]) state.centerLastReview[state.selectedCenter.id] = review.date;
-      const now = new Date(); const ms = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
-      if (review.date >= ms) state.thisMonthReview[state.selectedCenter.id] = true;
+    const fileUrl=fileUrls.length>0?fileUrls.join(","):null;
+    await insertReview(review,fileUrl);state.uploadProgress=100;review.fileUrl=fileUrl;
+    state.centerCounts[state.selectedCenter.id]=(state.centerCounts[state.selectedCenter.id]||0)+1;
+    if(review.noReview){
+      if(!state.centerLastVisit[state.selectedCenter.id]||review.date>=state.centerLastVisit[state.selectedCenter.id])state.centerLastVisit[state.selectedCenter.id]=review.date;
+      const now=new Date();const ms=new Date(now.getFullYear(),now.getMonth(),1).toISOString().slice(0,10);
+      if(review.date>=ms)state.thisMonthVisit[state.selectedCenter.id]=true;
+    }else{
+      if(!state.centerLastReview[state.selectedCenter.id]||review.date>=state.centerLastReview[state.selectedCenter.id])state.centerLastReview[state.selectedCenter.id]=review.date;
+      const now=new Date();const ms=new Date(now.getFullYear(),now.getMonth(),1).toISOString().slice(0,10);
+      if(review.date>=ms)state.thisMonthReview[state.selectedCenter.id]=true;
     }
-    state.reviews = [review, ...state.reviews]; state.saving = false; closeModal(); showToast("Saved!");
-  } catch (err) { state.saving = false; state.uploadProgress = 0; render(); showToast("Error: " + (err.message || "check console")); console.error(err); }
+    state.reviews=[review,...state.reviews];state.saving=false;closeModal();showToast("Saved!");
+  }catch(err){state.saving=false;state.uploadProgress=0;render();showToast("Error: "+(err.message||"check console"));console.error(err);}
 }
 
-async function doDelete() {
-  const r = state.activeReview;
-  try {
-    await removeReview(r.id, r.fileType);
-    state.centerCounts[state.selectedCenter.id] = Math.max(0, (state.centerCounts[state.selectedCenter.id] || 1) - 1);
-    state.reviews = state.reviews.filter(x => x.id !== r.id);
-    const lastRev = state.reviews.find(x => !x.noReview); const lastVis = state.reviews.find(x => x.noReview);
-    state.centerLastReview[state.selectedCenter.id] = lastRev ? lastRev.date : null;
-    state.centerLastVisit[state.selectedCenter.id] = lastVis ? lastVis.date : null;
-    state.view = "center"; state.activeReview = null; state.deleteConfirm = false; render(); showToast("Deleted.");
-  } catch (err) { showToast("Error: " + (err.message || "check console")); console.error(err); }
+async function doDelete(){
+  const r=state.activeReview;
+  try{
+    await removeReview(r.id,r.fileType);
+    state.centerCounts[state.selectedCenter.id]=Math.max(0,(state.centerCounts[state.selectedCenter.id]||1)-1);
+    state.reviews=state.reviews.filter(x=>x.id!==r.id);
+    const lastRev=state.reviews.find(x=>!x.noReview);const lastVis=state.reviews.find(x=>x.noReview);
+    state.centerLastReview[state.selectedCenter.id]=lastRev?lastRev.date:null;
+    state.centerLastVisit[state.selectedCenter.id]=lastVis?lastVis.date:null;
+    state.view="center";state.activeReview=null;state.deleteConfirm=false;render();showToast("Deleted.");
+  }catch(err){showToast("Error: "+(err.message||"check console"));console.error(err);}
 }
 
-document.getElementById("file-input").addEventListener("change", function(e) {
-  const files = Array.from(e.target.files); if (!files.length) return;
-  let loaded = 0;
-  files.forEach(file => {
-    const entry = { file, name: file.name, fileType: file.type === "application/pdf" ? "pdf" : "image", previewUrl: null };
-    if (entry.fileType === "image") {
-      const reader = new FileReader();
-      reader.onload = ev => { entry.previewUrl = ev.target.result; loaded++; if (loaded === files.length) render(); };
-      reader.readAsDataURL(file);
-    } else { loaded++; if (loaded === files.length) render(); }
+document.getElementById("file-input").addEventListener("change",function(e){
+  const files=Array.from(e.target.files);if(!files.length)return;let loaded=0;
+  files.forEach(file=>{
+    const entry={file,name:file.name,fileType:file.type==="application/pdf"?"pdf":"image",previewUrl:null};
+    if(entry.fileType==="image"){const reader=new FileReader();reader.onload=ev=>{entry.previewUrl=ev.target.result;loaded++;if(loaded===files.length)render();};reader.readAsDataURL(file);}
+    else{loaded++;if(loaded===files.length)render();}
     state.formFiles.push(entry);
   });
-  this.value = "";
+  this.value="";
 });
 
-document.getElementById("app").addEventListener("click", handleClick);
-(async () => { await Promise.all([fetchCenterMeta(), fetchFollowUp()]); render(); })();
+document.getElementById("app").addEventListener("click",handleClick);
+(async()=>{await Promise.all([fetchCenterMeta(),fetchFollowUp()]);render();})();
 </script>
 </body>
 </html>
