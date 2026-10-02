@@ -250,7 +250,8 @@ function renderList(){
     const visitOverdue=!lastV||lastV<cutoffVisit;const reviewOverdue=!lastR||lastR<cutoffReview;
     const nameRed=visitOverdue&&reviewOverdue;
     const visitColor=visitOverdue?"#EF4444":"#888";const reviewColor=reviewOverdue?"#EF4444":"#888";
-    const visitCheck=(lastV&&lastV>=cutoffVisit)?check:empty;
+       const lastAny=(!lastV&&!lastR)?null:(!lastV?lastR:(!lastR?lastV:(lastV>lastR?lastV:lastR)));
+    const visitCheck=(lastAny&&lastAny>=cutoffVisit)?check:empty;
     const reviewCheck=(lastR&&lastR>=cutoffReview)?check:empty;
     const fuOn=state.followUp[c.id]||false;
     return `<div class="card" data-action="open-center" data-id="${c.id}">
