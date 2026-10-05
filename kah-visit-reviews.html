@@ -97,8 +97,7 @@
   .followup-btn { border: none; border-radius: 6px; padding: 3px 9px; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
   .followup-btn.on { background: #EF4444; color: #fff; border: 1px solid #DC2626; }
   .followup-btn.off { background: #F3F4F6; color: #9CA3AF; border: 1px solid #E5E7EB; }
-  .followup-note { font-size: 11px; color: #991B1B; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 5px; padding: 2px 7px; margin-top: 3px; max-width: 300px; cursor: pointer; }
-  .followup-note-input { font-size: 12px; border: 1px solid #FCA5A5; border-radius: 6px; padding: 5px 10px; outline: none; background: #fff; width: 240px; margin-top: 3px; }
+  .followup-note { font-size: 11px; color: #991B1B; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 5px; padding: 2px 7px; margin-top: 3px; max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
   .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #E8E8E3; border-top-color: #F59E0B; border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-wrap { text-align: center; padding: 48px; color: #bbb; display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 14px; }
@@ -138,7 +137,7 @@ const CENTERS = [
 let state = {
   view:"list",selectedCenter:null,reviews:[],reviewsLoading:false,activeReview:null,
   centerCounts:{},centerLastVisit:{},centerLastReview:{},thisMonthVisit:{},thisMonthReview:{},
-  followUp:{},followUpNote:{},editingNoteId:null,
+  followUp:{},followUpNote:{},
   search:"",sort:"alpha",showModal:false,formDate:todayStr(),formReviewer:"",formNotes:"",
   formFiles:[],formNoReview:false,saving:false,uploadProgress:0,deleteConfirm:false,
 };
@@ -174,15 +173,17 @@ async function fetchFollowUp(){
 async function toggleFollowUp(centerId){
   const cur=state.followUp[centerId]||false,next=!cur;
   state.followUp[centerId]=next;
-  if(!next){state.followUpNote[centerId]="";state.editingNoteId=null;}
-  else{state.editingNoteId=centerId;}
+  if(!next){state.followUpNote[centerId]="";}
   render();
   await sb.from("center_flags").upsert({center_id:centerId,follow_up:next,follow_up_note:next?(state.followUpNote[centerId]||""):"",updated_at:new Date().toISOString()});
-  if(next)setTimeout(()=>{const i=document.querySelector(".followup-note-input");if(i)i.focus();},60);
+  if(next){
+    const note=window.prompt("What needs follow up?",state.followUpNote[centerId]||"");
+    if(note!==null){state.followUpNote[centerId]=note;render();await sb.from("center_flags").upsert({center_id:centerId,follow_up:true,follow_up_note:note,updated_at:new Date().toISOString()});}
+  }
 }
-async function saveFollowUpNote(centerId,note){
-  state.followUpNote[centerId]=note;state.editingNoteId=null;render();
-  await sb.from("center_flags").upsert({center_id:centerId,follow_up:true,follow_up_note:note,updated_at:new Date().toISOString()});
+async function editFollowUpNote(centerId){
+  const note=window.prompt("What needs follow up?",state.followUpNote[centerId]||"");
+  if(note!==null){state.followUpNote[centerId]=note;render();await sb.from("center_flags").upsert({center_id:centerId,follow_up:true,follow_up_note:note,updated_at:new Date().toISOString()});}
 }
 async function fetchReviewsForCenter(centerId){
   const{data,error}=await sb.from("visit_reviews").select("*").eq("center_id",centerId).order("date",{ascending:false});
@@ -230,9 +231,7 @@ function renderList(){
     const la=(!lv&&!lr)?null:(!lv?lr:(!lr?lv:(lv>lr?lv:lr)));
     const vchk=(la&&la>=cv)?chk:emp,rchk=(lr&&lr>=cr)?chk:emp;
     const fuOn=state.followUp[c.id]||false,fuNote=state.followUpNote[c.id]||"";
-    const noteHtml=fuOn?(state.editingNoteId===c.id
-      ?`<div onclick="event.stopPropagation()"><input class="followup-note-input" type="text" placeholder="What needs follow up?" value="${escHtml(fuNote)}" onblur="saveFollowUpNote('${c.id}',this.value)" onkeydown="if(event.key==='Enter')saveFollowUpNote('${c.id}',this.value)" /></div>`
-      :`<div class="followup-note" onclick="event.stopPropagation();state.editingNoteId='${c.id}';render()">${fuNote?'📝 '+escHtml(fuNote):'<span style="color:#aaa;font-style:italic">Add note…</span>'}</div>`):"";
+    const noteHtml=fuOn?`<div class="followup-note" onclick="event.stopPropagation();editFollowUpNote('${c.id}')">${fuNote?'📝 '+escHtml(fuNote):'<span style="color:#aaa;font-style:italic">Tap to add note…</span>'}</div>`:"";
     return `<div class="card" data-action="open-center" data-id="${c.id}">
       <div class="avatar">${initials(c.name)}</div>
       <div style="flex:1;min-width:0">
