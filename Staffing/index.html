@@ -139,8 +139,7 @@ table.legend td b{color:var(--ink)}
         three schedule types, stamped onto the real blank form.</p>
     </div>
     <div class="btn-row">
-      <span class="sample-flag" id="sampleFlag">Sample data loaded</span>
-      <button type="button" id="clearAll">Clear all</button>
+      <button type="button" id="clearAll">Start over</button>
     </div>
   </div>
 </header>
@@ -153,7 +152,7 @@ table.legend td b{color:var(--ink)}
     <div class="step-bd">
       <div class="grid-site">
         <div><label class="fl" for="fFacility">Facility name</label>
-          <input type="text" id="fFacility" placeholder="Kids After Hours @ ..."></div>
+          <input type="text" id="fFacility"></div>
         <div><label class="fl" for="fDirector">Director</label>
           <input type="text" id="fDirector" placeholder="Full name"></div>
         <div><label class="fl" for="fAge">Age group</label>
@@ -459,48 +458,38 @@ var MAX_SLOTS=C.MAX_SLOTS;
    carries a random suffix rather than relying on a counter that restarts at 0. */
 var uid=0;
 function nid(){ return "k"+(++uid)+"_"+Math.random().toString(36).slice(2,8); }
-var S=null, isSample=false;
+var S=null;
 var $=function(id){ return document.getElementById(id); };
 
-function sampleState(){
+/* The page opens blank — the hours are the only thing pre-filled, since every
+   site runs the same three schedule types and they are editable anyway. */
+function emptyState(){
   return {
-    facility:"Sample Elementary School", director:"Example Director",
-    age:"School Age (5-12 years)", eff:"August 24, 2026", signed:"",
+    facility:"", director:"", age:"School Age (5-12 years)", eff:"", signed:"",
     scheds:[
       {id:"reg", label:"REGULAR SCHOOL DAYS (Mon-Fri)", name:"Regular day", blocks:[{s:7,e:9},{s:15,e:18.5}]},
       {id:"half",label:"EARLY RELEASE / HALF DAYS (Mon-Fri)", name:"Half day", blocks:[{s:7,e:9},{s:13,e:18.5}]},
       {id:"full",label:"SCHOOL HOLIDAYS - FULL DAYS (Mon-Fri)", name:"Full day", blocks:[{s:7,e:18.5}]}
     ],
-    rooms:[{id:nid(),name:"APR A",cap:30},{id:nid(),name:"APR B",cap:30}],
-    staff:[{id:nid(),name:"Dana Whitfield",role:"D"},{id:nid(),name:"Marcus Hale",role:"TS"},
-           {id:nid(),name:"Priya Raman",role:"TS"},{id:nid(),name:"Jonah Ellis",role:"A"},
-           {id:nid(),name:"Tess Okonkwo",role:"A"}],
+    rooms:[{id:nid(),name:"",cap:30}],
+    staff:[{id:nid(),name:"",role:"D"},{id:nid(),name:"",role:"TS"},{id:nid(),name:"",role:"A"}],
     assign:{}, sig:null
   };
 }
-function emptyState(){
-  var s=sampleState();
-  s.facility=""; s.director=""; s.eff=""; s.signed="";
-  s.rooms=[{id:nid(),name:"",cap:30}];
-  s.staff=[{id:nid(),name:"",role:"D"},{id:nid(),name:"",role:"TS"},{id:nid(),name:"",role:"A"}];
-  s.assign={}; s.sig=null;
-  return s;
-}
 
 var LS="kah.sp.v1";
-function save(){ try{ var c=JSON.parse(JSON.stringify(S)); c.__sample=isSample;
-  localStorage.setItem(LS,JSON.stringify(c)); }catch(e){} }
+function save(){ try{ localStorage.setItem(LS,JSON.stringify(S)); }catch(e){} }
 function load(){ try{
   var raw=localStorage.getItem(LS); if(!raw) return null;
   var o=JSON.parse(raw); if(!o||!o.scheds||!o.rooms||!o.staff) return null;
   if(o.signed==null) o.signed="";
-  isSample=!!o.__sample; delete o.__sample; return o;
+  delete o.__sample; return o;
 }catch(e){ return null; } }
 
 function staffById(id){ for(var i=0;i<S.staff.length;i++) if(S.staff[i].id===id) return S.staff[i]; return null; }
 function named(list){ return list.filter(function(x){ return (x.name||"").trim()!==""; }); }
 function slotsFor(roomId){ return (S.assign[roomId]||[]).filter(function(id){ return !!staffById(id); }); }
-function touched(){ if(isSample) isSample=false; }
+function touched(){ /* state changes are saved by the callers */ }
 
 function computeAssign(){
   var rooms=named(S.rooms).slice().sort(function(a,b){ return b.cap-a.cap; });
@@ -576,7 +565,7 @@ function renderRooms(){
   S.rooms.forEach(function(r,i){
     var row=document.createElement("div"); row.className="row-item row-rooms";
     var n=document.createElement("input"); n.type="text"; n.id="rn"+r.id; n.value=r.name;
-    n.placeholder="APR A"; n.setAttribute("aria-label","Room name");
+    n.placeholder="Room name"; n.setAttribute("aria-label","Room name");
     n.addEventListener("input",function(){ r.name=n.value; touched(); save(); renderAsg(); renderOut(); });
     var c=document.createElement("input"); c.type="number"; c.id="rc"+r.id; c.min="1"; c.max="200";
     c.value=r.cap; c.setAttribute("aria-label","Capacity");
@@ -614,12 +603,26 @@ function renderStaff(){
 
 function renderAsg(){
   var host=$("asgList"); host.textContent="";
-  var rooms=named(S.rooms);
-  if(!rooms.length){
+  if(!S.rooms.length){
     var p=document.createElement("p"); p.className="muted"; p.style.fontSize="14px";
     p.textContent="Add a room above and it will appear here."; host.appendChild(p); return;
   }
-  rooms.forEach(function(r){
+  S.rooms.forEach(function(r){
+    /* An unnamed room can't go on a form, but say so rather than hiding it. */
+    if(!(r.name||"").trim()){
+      var uc=document.createElement("div"); uc.className="asg-card";
+      var uh=document.createElement("div"); uh.className="asg-hd";
+      var un=document.createElement("span"); un.className="rm"; un.style.opacity=".55";
+      un.textContent="Unnamed room";
+      var uq=document.createElement("span"); uq.className="chip flat"; uq.style.marginLeft="auto";
+      uq.textContent="Not included";
+      uh.appendChild(un); uh.appendChild(uq); uc.appendChild(uh);
+      var ub=document.createElement("div"); ub.className="asg-bd";
+      var up=document.createElement("p"); up.className="note"; up.style.marginTop="0";
+      up.textContent="Type a name for this room in step 3 and it will appear here.";
+      ub.appendChild(up); uc.appendChild(ub); host.appendChild(uc);
+      return;
+    }
     var ids=slotsFor(r.id), sts=ids.map(staffById);
     var card=document.createElement("div"); card.className="asg-card";
     var hd=document.createElement("div"); hd.className="asg-hd";
@@ -728,7 +731,6 @@ function renderOut(){
     ul.appendChild(li);
   });
   $("gen").disabled = pages===0;
-  $("sampleFlag").hidden = !isSample;
 }
 function render(){ renderSite(); renderScheds(); renderRooms(); renderStaff(); renderAsg(); renderOut(); save(); }
 
@@ -851,9 +853,7 @@ function bindText(id,key){
   });
 }
 function init(){
-  var saved=load();
-  if(saved){ S=saved; }
-  else { S=sampleState(); isSample=true; S.assign=computeAssign(); }
+  S=load()||emptyState();
   render();
 
   bindText("fFacility","facility"); bindText("fDirector","director");
@@ -863,7 +863,7 @@ function init(){
   $("addStaff").addEventListener("click",function(){ S.staff.push({id:nid(),name:"",role:"A"}); touched(); render(); });
   $("autoAssign").addEventListener("click",autoAssign);
   $("clearAll").addEventListener("click",function(){
-    S=emptyState(); isSample=false; render(); say("","muted"); $("perm").hidden=true;
+    S=emptyState(); render(); say("","muted"); $("perm").hidden=true;
   });
   $("perm").addEventListener("click",function(){
     say("","muted");
