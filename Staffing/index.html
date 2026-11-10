@@ -79,9 +79,13 @@ button.x:hover{background:var(--bad-soft);color:var(--bad)}
 .rows{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
 .row-item{display:grid;gap:9px;align-items:center}
 .row-rooms{grid-template-columns:1fr 104px 34px}
-.row-staff{grid-template-columns:1fr 150px 34px}
+.row-staff{grid-template-columns:1fr 140px 124px 34px}
 .row-hd{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft)}
-@media (max-width:520px){ .row-rooms,.row-staff{grid-template-columns:1fr 92px 34px} .row-hd{display:none} }
+@media (max-width:640px){
+  .row-staff{grid-template-columns:1fr 1fr 34px}
+  .row-staff > :first-child{grid-column:1 / -1}
+}
+@media (max-width:520px){ .row-rooms{grid-template-columns:1fr 92px 34px} .row-hd{display:none} }
 .sched{display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:14px}
 .sched-card{border:1px solid var(--rule);border-radius:2px;padding:13px;min-width:0}
 .sched-card h3{font-size:13px;letter-spacing:.03em;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
@@ -106,6 +110,8 @@ button.x:hover{background:var(--bad-soft);color:var(--bad)}
 .role.D{background:var(--accent-soft);color:var(--accent)}
 .role.TS{background:var(--ok-soft);color:var(--ok)}
 .role.A{background:var(--rule);color:var(--ink-soft)}
+.shiftbadge{font-size:9.5px;font-weight:700;letter-spacing:.05em;padding:1px 4px;border-radius:2px;
+  background:var(--warn-soft);color:var(--warn);white-space:nowrap}
 .chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:2px;white-space:nowrap}
 .chip.ok{background:var(--ok-soft);color:var(--ok)}
 .chip.warn{background:var(--warn-soft);color:var(--warn)}
@@ -198,7 +204,7 @@ table.legend td b{color:var(--ink)}
     <div class="step-hd"><span class="step-n">4</span><h2>Staff</h2>
       <span class="hint">Names must match the personnel list exactly</span></div>
     <div class="step-bd">
-      <div class="row-item row-staff row-hd"><span>Full name</span><span>Position</span><span></span></div>
+      <div class="row-item row-staff row-hd"><span>Full name</span><span>Position</span><span>Works</span><span></span></div>
       <div class="rows" id="staffRows"></div>
       <button type="button" class="ghost" id="addStaff">+ Add staff</button>
       <table class="legend"><tr>
@@ -324,6 +330,36 @@ table.legend td b{color:var(--ink)}
   function needFor(cap) { return Math.max(1, Math.ceil(cap / RATIO)); }
   function isSenior(st) { return !!st && (st.role === "D" || st.role === "TS"); }
 
+  /* Which hours a staff member covers on a given schedule.
+     "am" / "pm" take the first / later blocks of a split day; on a single
+     continuous day (a school holiday) they become an opening and a closing
+     shift, split at the midpoint rounded to the nearest half hour. */
+  function blocksForStaff(sc, st) {
+    var vb = validBlocks(sc);
+    if (st && st.blocks) return validBlocks({ blocks: st.blocks });
+    var shift = (st && st.shift) || "all";
+    if (shift === "all" || !vb.length) return vb;
+    if (vb.length >= 2) return shift === "am" ? [vb[0]] : vb.slice(1);
+    var b = vb[0], mid = Math.round(((b.s + b.e) / 2) * 2) / 2;
+    return shift === "am" ? [{ s: b.s, e: mid }] : [{ s: mid, e: b.e }];
+  }
+
+  /* The thinnest half hour of the day: how many staff are on the floor and
+     whether one of them is senior. A room can meet ratio in the morning and
+     be short in the afternoon, so headcount alone is not enough. */
+  function thinnestHour(sc, cap, staff) {
+    var cols = openCols(sc), worst = null;
+    cols.forEach(function (c) {
+      var t = GRID_START + c / 2 + 0.25;
+      var on = staff.filter(function (st) {
+        return blocksForStaff(sc, st).some(function (b) { return b.s <= t && t <= b.e; });
+      });
+      var rec = { time: t, n: on.length, senior: on.some(isSenior) };
+      if (!worst || rec.n < worst.n || (rec.n === worst.n && worst.senior && !rec.senior)) worst = rec;
+    });
+    return worst ? { n: worst.n, senior: worst.senior, need: needFor(cap), time: worst.time } : null;
+  }
+
   function fit(font, text, size, max) {
     var s = size;
     while (s > 4.6 && font.widthOfTextAtSize(text, s) > max) s -= 0.1;
@@ -373,7 +409,7 @@ table.legend td b{color:var(--ink)}
       var lbl = (st.title || POSNAME[st.role]) + " (" + st.role + ")";
       pg.drawText(lbl, { x: 35, y: y - 6.5, size: fit(reg, lbl, 6.4, 84), font: reg, color: black });
       /* A staff member may cover only part of the day the room is open. */
-      (st.blocks ? validBlocks({ blocks: st.blocks }) : vb).forEach(function (b) {
+      blocksForStaff(sc, st).forEach(function (b) {
         var xa = xAt(b.s), xb = xAt(b.e);
         pg.drawLine({ start: { x: xa, y: y - 1.5 }, end: { x: xb, y: y - 1.5 }, thickness: 1.6, color: black });
         pg.drawCircle({ x: xa, y: y - 1.5, size: 1.5, color: black });
@@ -443,7 +479,8 @@ table.legend td b{color:var(--ink)}
     Y: Y, xAt: xAt, parts: parts, hm: hm, h12: h12, hShort: hShort,
     blockLabel: blockLabel, validBlocks: validBlocks, weeklyHours: weeklyHours,
     openCols: openCols, hoursLine: hoursLine, summaryLine: summaryLine,
-    needFor: needFor, isSenior: isSenior, build: build
+    needFor: needFor, isSenior: isSenior,
+    blocksForStaff: blocksForStaff, thinnestHour: thinnestHour, build: build
   };
 });
 </script>
@@ -472,7 +509,8 @@ function emptyState(){
       {id:"full",label:"SCHOOL HOLIDAYS - FULL DAYS (Mon-Fri)", name:"Full day", blocks:[{s:7,e:18.5}]}
     ],
     rooms:[{id:nid(),name:"",cap:30}],
-    staff:[{id:nid(),name:"",role:"D"},{id:nid(),name:"",role:"TS"},{id:nid(),name:"",role:"A"}],
+    staff:[{id:nid(),name:"",role:"D",shift:"all"},{id:nid(),name:"",role:"TS",shift:"all"},
+           {id:nid(),name:"",role:"A",shift:"all"}],
     assign:{}, sig:null
   };
 }
@@ -483,6 +521,7 @@ function load(){ try{
   var raw=localStorage.getItem(LS); if(!raw) return null;
   var o=JSON.parse(raw); if(!o||!o.scheds||!o.rooms||!o.staff) return null;
   if(o.signed==null) o.signed="";
+  (o.staff||[]).forEach(function(st){ if(!st.shift) st.shift="all"; });
   delete o.__sample; return o;
 }catch(e){ return null; } }
 
@@ -590,6 +629,13 @@ function renderStaff(){
       if(st.role===o[0]) op.selected=true; sel.appendChild(op);
     });
     sel.addEventListener("change",function(){ st.role=sel.value; touched(); save(); renderAsg(); renderOut(); });
+    var shf=document.createElement("select"); shf.id="sh"+st.id;
+    shf.setAttribute("aria-label","Which part of the day this person works");
+    [["all","All day"],["am","Morning only"],["pm","Afternoon only"]].forEach(function(o){
+      var op=document.createElement("option"); op.value=o[0]; op.textContent=o[1];
+      if((st.shift||"all")===o[0]) op.selected=true; shf.appendChild(op);
+    });
+    shf.addEventListener("change",function(){ st.shift=shf.value; touched(); save(); renderAsg(); renderOut(); });
     var x=document.createElement("button"); x.type="button"; x.className="x"; x.textContent="×";
     x.setAttribute("aria-label","Remove staff member");
     x.addEventListener("click",function(){
@@ -597,9 +643,28 @@ function renderStaff(){
         S.assign[k]=(S.assign[k]||[]).filter(function(id){ return id!==st.id; }); });
       S.staff.splice(i,1); touched(); render();
     });
-    row.appendChild(n); row.appendChild(sel); row.appendChild(x); host.appendChild(row);
+    row.appendChild(n); row.appendChild(sel); row.appendChild(shf); row.appendChild(x);
+    host.appendChild(row);
   });
 }
+
+/* The thinnest half hour across every schedule. A room can meet ratio in the
+   morning and be short in the afternoon, so headcount alone is not enough. */
+function roomWorst(r){
+  var sts=slotsFor(r.id).map(staffById);
+  if(!sts.length) return null;
+  var worst=null;
+  S.scheds.forEach(function(sc){
+    if(!C.validBlocks(sc).length) return;
+    var w=C.thinnestHour(sc,r.cap,sts);
+    if(!w) return;
+    if(!worst || w.n<worst.n || (w.n===worst.n && worst.senior && !w.senior)){
+      worst=w; worst.sched=sc.name;
+    }
+  });
+  return worst;
+}
+function atTime(h){ return C.hShort(h-0.25); }
 
 function renderAsg(){
   var host=$("asgList"); host.textContent="";
@@ -631,10 +696,12 @@ function renderAsg(){
     cap.textContent="cap "+r.cap+" · needs "+C.needFor(r.cap);
     hd.appendChild(rm); hd.appendChild(cap);
     var chip=document.createElement("span"); chip.className="chip"; chip.style.marginLeft="auto";
+    var w=roomWorst(r);
     if(!sts.length){ chip.className+=" flat"; chip.textContent="No staff"; }
-    else if(!sts.some(C.isSenior)){ chip.className+=" bad"; chip.textContent="No senior staff"; }
-    else if(sts.length<C.needFor(r.cap)){ chip.className+=" bad"; chip.textContent="Over ratio"; }
-    else if(sts.length===C.needFor(r.cap)){ chip.className+=" warn"; chip.textContent="At ratio, no cushion"; }
+    else if(!w){ chip.className+=" flat"; chip.textContent="No hours set"; }
+    else if(!w.senior){ chip.className+=" bad"; chip.textContent="No senior staff at "+atTime(w.time); }
+    else if(w.n<w.need){ chip.className+=" bad"; chip.textContent="Over ratio at "+atTime(w.time); }
+    else if(w.n===w.need){ chip.className+=" warn"; chip.textContent="At ratio, no cushion"; }
     else { chip.className+=" ok"; chip.textContent="Covered"; }
     hd.appendChild(chip); card.appendChild(hd);
 
@@ -643,10 +710,15 @@ function renderAsg(){
       var row=document.createElement("div"); row.className="slot";
       var b=document.createElement("span"); b.className="role "+st.role; b.textContent=st.role;
       var nm=document.createElement("span"); nm.className="nm"; nm.textContent=st.name;
+      row.appendChild(b); row.appendChild(nm);
+      if(st.shift==="am"||st.shift==="pm"){
+        var sb=document.createElement("span"); sb.className="shiftbadge";
+        sb.textContent=st.shift==="am"?"AM":"PM"; row.appendChild(sb);
+      }
       var x=document.createElement("button"); x.type="button"; x.className="x"; x.textContent="×";
       x.setAttribute("aria-label","Remove "+st.name+" from "+r.name);
       x.addEventListener("click",function(){ S.assign[r.id].splice(si,1); touched(); save(); renderAsg(); renderOut(); });
-      row.appendChild(b); row.appendChild(nm); row.appendChild(x); bd.appendChild(row);
+      row.appendChild(x); bd.appendChild(row);
     });
     if(ids.length<MAX_SLOTS){
       var avail=named(S.staff).filter(function(st){ return ids.indexOf(st.id)<0; });
@@ -687,19 +759,24 @@ function findings(){
   var unstaffed=rooms.filter(function(r){ return !slotsFor(r.id).length; });
   if(unstaffed.length) out.push(["warn","Rooms with no staff",
     unstaffed.map(function(r){ return r.name; }).join(", ")+" — no pages will be produced for "+(unstaffed.length>1?"these":"this")+"."]);
-  var noSenior=rooms.filter(function(r){ var s=slotsFor(r.id).map(staffById); return s.length && !s.some(C.isSenior); });
+  /* Morning-only and afternoon-only staff mean a room can be legal at one
+     hour and short at another, so these checks look at the thinnest hour. */
+  var worsts={}; rooms.forEach(function(r){ worsts[r.id]=roomWorst(r); });
+  function lbl(r){ var w=worsts[r.id]; return r.name+(w?" at "+atTime(w.time):""); }
+  var noSenior=rooms.filter(function(r){ var w=worsts[r.id]; return w && !w.senior; });
   if(noSenior.length) out.push(["bad","Aide as senior staff",
-    noSenior.map(function(r){ return r.name; }).join(", ")+" has no Director or Teacher. Licensing will reject this."]);
-  var over=rooms.filter(function(r){ var n=slotsFor(r.id).length; return n>0 && n<C.needFor(r.cap); });
+    noSenior.map(lbl).join(", ")+" has no Director or Teacher on the floor. Licensing will reject this."]);
+  var over=rooms.filter(function(r){ var w=worsts[r.id]; return w && w.senior && w.n<w.need; });
   if(over.length) out.push(["bad","Over ratio",
-    over.map(function(r){ return r.name+" ("+slotsFor(r.id).length+" to "+r.cap+")"; }).join(", ")+
+    over.map(function(r){ var w=worsts[r.id];
+      return r.name+" ("+w.n+" to "+r.cap+" at "+atTime(w.time)+")"; }).join(", ")+
     " — school age is one staff per "+C.RATIO+"."]);
   var seen={}, clash=[];
   rooms.forEach(function(r){ slotsFor(r.id).forEach(function(id){
     if(seen[id]){ if(clash.indexOf(id)<0) clash.push(id); } else seen[id]=1; }); });
   if(clash.length) out.push(["bad","Assigned to two rooms at once",
     clash.map(function(id){ var s=staffById(id); return s?s.name:"?"; }).join(", ")+"."]);
-  var tight=rooms.filter(function(r){ var n=slotsFor(r.id).length; return n>0 && n===C.needFor(r.cap); });
+  var tight=rooms.filter(function(r){ var w=worsts[r.id]; return w && w.senior && w.n===w.need; });
   if(tight.length) out.push(["warn","At ratio with no cushion",
     tight.map(function(r){ return r.name; }).join(", ")+" — one absence puts "+(tight.length>1?"these rooms":"the room")+" out of ratio."]);
   var assigned={}; rooms.forEach(function(r){ slotsFor(r.id).forEach(function(id){ assigned[id]=1; }); });
@@ -860,7 +937,7 @@ function init(){
   bindText("fAge","age"); bindText("fEff","eff"); bindText("fSigned","signed");
 
   $("addRoom").addEventListener("click",function(){ S.rooms.push({id:nid(),name:"",cap:30}); touched(); render(); });
-  $("addStaff").addEventListener("click",function(){ S.staff.push({id:nid(),name:"",role:"A"}); touched(); render(); });
+  $("addStaff").addEventListener("click",function(){ S.staff.push({id:nid(),name:"",role:"A",shift:"all"}); touched(); render(); });
   $("autoAssign").addEventListener("click",autoAssign);
   $("clearAll").addEventListener("click",function(){
     S=emptyState(); render(); say("","muted"); $("perm").hidden=true;
